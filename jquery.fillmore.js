@@ -1,11 +1,11 @@
 /*
- * jQuery Backstretch
- * Version 1.2.2
- * http://srobbin.com/jquery-plugins/jquery-backstretch/
+ * jQuery Fillmore
+ * Version 0.1.0
+ * https://github.com/Gjslick/jquery-fillmore
  *
- * Add a dynamically-resized background image to the page
+ * Add a dynamically-resized background image to any element
  *
- * Copyright (c) 2011 Scott Robbin (srobbin.com)
+ * Copyright (c) 2011 Gregory Jacobs (jux.com)
  * Dual licensed under the MIT and GPL licenses.
  */
 
@@ -20,20 +20,20 @@
     
     /**
      * @private
-     * @class Backstretch
+     * @class Fillmore
      * 
-     * Backstretch class for making an instance on every element that is to have a backstretched background.
+     * Fillmore class for making an instance on every element that is to have a fillmoreed background.
      * The constructor initializes the properties and elements that the plugin will use.
      *
      * @constructor
-     * @property {HTMLElement|jquery} containerEl The container element where a backstretched image should be placed.
+     * @property {HTMLElement|jquery} containerEl The container element where a fillmoreed image should be placed.
      */
-    var Backstretch = function( containerEl ) {
-        var backstretchElPosition = 'absolute';  // will be set to fixed if using the body element as the container
+    var Fillmore = function( containerEl ) {
+        var fillmoreElPosition = 'absolute';  // will be set to fixed if using the body element as the container
         
         
         /**
-         * The z-index to use for the {@link #$backstretchEl}. This is set to -1 for regular elements, and -999999 for the body element.
+         * The z-index to use for the {@link #$fillmoreEl}. This is set to -1 for regular elements, and -999999 for the body element.
          *
          * @private
          * @property zIndex
@@ -42,7 +42,7 @@
         this.zIndex = -1;  // -1 for regular elements, -999999 for body element
         
         /**
-         * The container element that is having a backstretched image applied to it.
+         * The container element that is having a fillmoreed image applied to it.
          * 
          * @private
          * @property $containerEl
@@ -50,13 +50,13 @@
          */
         this.$containerEl = $( containerEl )
             .css( {
-               position: 'relative',      // make sure the container has a positioning context, so we can position the $backstretchEl inside it
+               position: 'relative',      // make sure the container has a positioning context, so we can position the $fillmoreEl inside it
                background: 'transparent' 
             } );
             
         
         /**
-         * The element to use to size the backstretched element. This is in most cases the {@link #$containerEl} itself, but
+         * The element to use to size the fillmoreed element. This is in most cases the {@link #$containerEl} itself, but
          * in the case that the document body is being used, it becomes either the document object (for iOS), or the window
          * object for all other OS's.
          *
@@ -67,7 +67,7 @@
         this.$containerSizingEl = this.$containerEl;
         if( this.$containerSizingEl.is( 'body' ) ) {
             this.$containerSizingEl = ( 'onorientationchange' in window ) ? $( document ) : $( window ); // hack to acccount for iOS position:fixed shortcomings
-            backstretchElPosition = 'fixed';
+            fillmoreElPosition = 'fixed';
             this.zIndex = -999999;
         } else {
             this.$containerEl.css( 'overflow', 'hidden' );
@@ -84,13 +84,13 @@
         this.settings = $.extend( {}, defaultSettings );
         
         /**
-         * The element which will hold the backstretched image.
+         * The element which will hold the fillmoreed image.
          * 
          * @private
-         * @property $backstretchEl
+         * @property $fillmoreEl
          * @type jQuery
          */
-        this.$backstretchEl = $( '<div style="left: 0; top: 0; position: ' + backstretchElPosition + '; overflow: hidden; z-index: ' + this.zIndex + '; margin: 0; padding: 0; height: 100%; width: 100%;" />' )
+        this.$fillmoreEl = $( '<div style="left: 0; top: 0; position: ' + fillmoreElPosition + '; overflow: hidden; z-index: ' + this.zIndex + '; margin: 0; padding: 0; height: 100%; width: 100%;" />' )
             .appendTo( this.$containerEl );
         
         /**
@@ -117,8 +117,8 @@
     };
     
     
-    Backstretch.prototype = {
-        constructor : Backstretch,  // fix constructor property
+    Fillmore.prototype = {
+        constructor : Fillmore,  // fix constructor property
         
         
         /**
@@ -134,7 +134,7 @@
         
         
         /**
-         * Initializes the Backstretch plugin on an element.
+         * Initializes the Fillmore plugin on an element.
          *
          * @method showImage
          * @param {String} src The src for the image to show.
@@ -142,13 +142,13 @@
          */
         showImage : function( src, callback ) {
             // Mark any old image(s) for removal. They will be removed when the new image loads.
-            this.$backstretchEl.find( 'img' ).addClass( 'deletable' );
+            this.$fillmoreEl.find( 'img' ).addClass( 'deletable' );
             
             
             // Create a new image element
             this.$img = $( '<img style="position: absolute; display: none; margin: 0; padding: 0; border: none; z-index: ' + this.zIndex + ';" />' )
                 .bind( 'load', $.proxy( function( evt ) { this.onImageLoaded( evt, callback ); }, this ) )
-                .appendTo( this.$backstretchEl );
+                .appendTo( this.$fillmoreEl );
                             
             this.$img.attr( "src", src ); // Hack for IE img onload event
         },
@@ -164,7 +164,7 @@
          */
         onImageLoaded : function( evt, callback ) {
             var img = evt.target,
-                $backstretchEl = this.$backstretchEl;
+                $fillmoreEl = this.$fillmoreEl;
             
             this.$img.css( { width: "auto", height: "auto" } );
             
@@ -178,7 +178,7 @@
             
             this.$img.fadeIn( this.settings.speed, function() {
                 // Remove the old images (if any exist), and remove them
-                $backstretchEl.find( 'img.deletable' ).remove();
+                $fillmoreEl.find( 'img.deletable' ).remove();
                 
                 // Callback
                 if( typeof callback === "function" ) {
@@ -226,7 +226,7 @@
                     }
                     
                     // Update the elements
-                    this.$backstretchEl.width( bgWidth ).height( bgHeight );
+                    this.$fillmoreEl.width( bgWidth ).height( bgHeight );
                     this.$img.width( bgWidth ).height( bgHeight ).css( bgCSS );
                     
                 } catch( err ) {
@@ -242,28 +242,28 @@
     
     
     // jQuery Plugin Code
-    $.fn.backstretch = function( src, settings, callback ) {
+    $.fn.fillmore = function( src, settings, callback ) {
         return this.each( function( idx, el ) {
             // Create an instance on the element if there is none yet
             var $el = $( el ),
-                backstretch = $el.data( 'backstretch' );
+                fillmore = $el.data( 'fillmore' );
             
-            if( !backstretch ) { // no instance for the element yet
-                backstretch = new Backstretch( el );
-                $el.data( 'backstretch', backstretch );
+            if( !fillmore ) { // no instance for the element yet
+                fillmore = new Fillmore( el );
+                $el.data( 'fillmore', fillmore );
             }
             
             
-            backstretch.updateSettings( settings );
-            backstretch.showImage( src, callback );
+            fillmore.updateSettings( settings );
+            fillmore.showImage( src, callback );
         } );
     };
     
     
     // Static jQuery method, to maintain old behavior. This automatically attaches to the body element.
-    $.backstretch = function( src, settings, callback ) {
+    $.fillmore = function( src, settings, callback ) {
         $( document ).ready( function() {
-            $( 'body' ).backstretch( src, settings, callback );
+            $( 'body' ).fillmore( src, settings, callback );
         } );
     };
   
