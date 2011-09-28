@@ -1,11 +1,50 @@
 h1. jQuery Fillmore
 
-Fillmore is a jQuery plugin that allows you to add a dynamically-resized background image to any page.
-The image will stretch to fit the page, and will automatically resize as the window size changes.
+Fillmore is a jQuery plugin that allows you to add a dynamically-resized background image to any page, or any given element.
+The image will stretch to fit the page / element, and will automatically resize as the window size changes.
+
+This was originally a fork of the jquery Backstretch plugin, which only allowed for stretching an image as the background 
+of the page body, but then was rewritten to allow stretching a background image over any desired element as well. Hence the name,
+"Fillmore"; it fills more elements :)  It still maintains the same method parameters as backstretch, and can therefore 
+replace backstretch in your code if you want to start taking advantage of being able to stretch an image over any given element 
+as well (as long as you change the name 'backstretch' to 'fillmore'). 
+
+The original jquery Backstretch plugin is here: https://github.com/srobbin/jquery-backstretch.  Thanks Scott Robbin.
+
 
 h2. Demo
 
 There are a couple of examples included with this package, or feel free to check it out live "on the project page itself.":http://srobbin.com/jquery-plugins/jquery-fillmore/
+
+
+h2. Setup
+
+Include the jQuery library and Fillmore plugin files in your webpage (preferably at the bottom of the page, before the closing BODY tag):
+
+<pre><code><script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+<script type="text/javascript" src="jquery.fillmore.min.js"></script>
+</code></pre>
+
+Note: The example above uses the Google hosted version of jQuery; there is also a jQuery source file included with this distribution, if you would like to host it yourself.
+
+
+h2. Usage
+
+<pre><code><script type="text/javascript">
+  // To stretch an image over the document body
+  $.fillmore( String imgSrc, [Object options], [Function callback] );
+
+  // The above is equivalent to:
+  $('body').fillmore( String imgSrc, [Object options], [Function callback] );
+
+
+  // To stretch an image over any element(s) (jQuery wrapped set)
+  $('div.myEls').fillmore( String imgSrc, [Object options], [Function callback] );
+</script>
+</code></pre>
+
+The callback is executed when a new image has been loaded and faded in.
+
 
 h2. Options
 
@@ -22,22 +61,16 @@ h3. speed
 This is the speed at which the image will fade in, after downloading is complete. Integers are accepted, as well as standard jQuery speed strings (slow, normal, fast). (type=Integer, default=0)
 
 
-h2. Setup
 
-Include the jQuery library and Fillmore plugin files in your webpage (preferably at the bottom of the page, before the closing BODY tag):
-
-<pre><code><script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
-<script type="text/javascript" src="/jquery.fillmore.min.js"></script>
-</code></pre>
-
-Note: The example above uses the Google hosted version of jQuery; there is also a jQuery source file included with this distribution, if you would like to host it yourself.
+h2. Examples
 
 <pre><code><script type="text/javascript">
+  // Add a stretched background image to the page (body)
   $.fillmore("/path/to/image.jpg", {speed: 150});
 </script>
 </code></pre>
 
-Want to change the image after Fillmore has been loaded? No problem, just call it again!
+Want to change the background image after Fillmore has been loaded? No problem, just call it again!
 
 <pre><code><script type="text/javascript">
   $.fillmore("/path/to/image.jpg", {speed: 150});
@@ -49,18 +82,25 @@ Want to change the image after Fillmore has been loaded? No problem, just call i
 </script>
 </code></pre>
 
+
+You may also stretch a background image over any element(s) as well.
+
+<pre><code><script type="text/javascript">
+  $('div').fillmore("/path/to/image.jpg", {speed: 150});
+  
+  // And then changing them at a later time...
+  $(".button").click(function() {
+      $('div').fillmore("/path/to/next_image.jpg");
+  });
+</script>
+</code></pre>
+
+
 h2. Changelog
 
-h3. Version 1.2
+h3. Version 1.0
 
-* You can now called fillmore twice, and it will replace the existing image.
-
-h3. Version 1.1
-
-* Added 'centeredX' and 'centeredY' options.
-* Removed 'hideUntilReady' option. It looks pretty bad if you don't hide the image until it's fully loaded.
-* Fixed IE img onload bug.
-* Now supports iPhone/iPad orientation changes.
+* Rewrote original jquery Backstretch plugin (https://github.com/srobbin/jquery-backstretch) to be able to stretch a background image over any element; not just the page body.
 
 h2. Support
 
