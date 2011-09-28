@@ -9,14 +9,16 @@
 	        margin: 20px auto;
 	        background-color: #FFF;
 	        padding: 20px;
+	        color: blue;
+	        height: 500px;
 	    }
 	    pre { border: 1px solid #CCC; background-color: #EEE; color: #333; padding: 10px; }
 	</style>
 </head>
 <body>
     <div class="container">
-        <h1>Basic Demo</h1>
-        <p>This is a basic demo of jQuery Backstretch. It is a simple example of loading one image onto the page.</p>
+        <h1>Custom Element Demo</h1>
+        <p>This is a demo of jQuery Backstretch in a custom element. It is a simple example of loading one image into that element.</p>
         <pre><code>
 &lt;script src=&quot;../lib/jquery-1.6.2.min.js&quot;&gt;&lt;/script&gt;
 &lt;script src=&quot;../jquery.backstretch.min.js&quot;&gt;&lt;/script&gt;
@@ -28,7 +30,8 @@
 	<script src="../lib/jquery-1.6.2.min.js"></script>
 	<script src="../jquery.backstretch.js"></script>
 	<script>
-	    $.backstretch("pot-holder.jpg");
+	    $.backstretch( "pot-holder.jpg", { speed: 250 } );
+	    $( '.container' ).backstretch( "coffee.jpg" );
     </script>
 </body>
 </html>
