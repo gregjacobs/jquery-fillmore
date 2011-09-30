@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<style>
+		body { font-family: Helvetica, Arial, sans-serif; }
+		.container {
+			width: 90%;
+			margin: 20px auto;
+			background-color: #FFF;
+			padding: 20px;
+			color: blue;
+		}
+		pre { border: 1px solid #CCC; background-color: #EEE; color: #333; padding: 10px; }
+	</style>
+</head>
+<body>
+	<div class="container">
+		<h1>Click Demo</h1>
+		<p>This demonstrates how to remove the Fillmore'd image, after it has been applied. This is useful when working in a dynamic environment.</p>
+		<p>
+			<input type="button" id="applyBg" value="Apply Background" />
+			<input type="button" id="removeBg" value="Remove Background" />
+		</p>
+		<pre><code>
+&lt;script src=&quot;../lib/jquery-1.6.2.min.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;../jquery.fillmore.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+	$.fillmore(&quot;pot-holder.jpg&quot;, {speed: 500});
+	$( '.container' ).fillmore( &quot;coffee.jpg&quot; );
+	
+	$(&quot;#applyBg&quot;).click(function() {
+	   $.fillmore(&quot;pot-holder.jpg&quot;);
+	});
+	
+	$(&quot;#removeBg&quot;).click(function() {
+	   var fillmore = $( &quot;body&quot; ).data( &quot;fillmore&quot; );
+	   if( fillmore ) {
+		   fillmore.destroy();
+	   }
+	});
+&lt;/script&gt;
+		</code></pre>
+	</div>
+	<script src="../lib/jquery-1.6.2.min.js"></script>
+	<script src="../jquery.fillmore.js"></script>
+	<script>
+		$.fillmore("pot-holder.jpg", {speed: 500});
+		$( '.container' ).fillmore( 'coffee.jpg', { speed: 500 } );
+		
+		$("#applyBg").click(function() {
+		   $.fillmore( "pot-holder.jpg" );
+			$( '.container' ).fillmore( 'coffee.jpg' );
+		});
+		
+		$("#removeBg").click(function() {
+		   var fillmore = $( 'body' ).data( 'fillmore' );
+		   if( fillmore ) {
+			   fillmore.destroy();
+		   }
+		   
+		   var fillmore = $( '.container' ).data( 'fillmore' );
+		   if( fillmore ) {
+			   fillmore.destroy();
+		   }
+		});
+	</script>
+</body>
+</html>

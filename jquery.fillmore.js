@@ -46,6 +46,7 @@
 			
 		} else {
 			// Make sure we cut the image off at the end of the container element
+			this.originalContainerOverflow = $containerEl[ 0 ].style.overflow;
 			$containerEl.css( 'overflow', 'hidden' );
 			
 			// Make sure the container element has a positioning context, so we can position the $fillmoreEl inside it. Must be absolute/relative/fixed.
@@ -68,7 +69,8 @@
 			.appendTo( $containerEl );
 		
 		// Add a handler to adjust the background size when the window is resized or orientation has changed (iOS)
-		$( window ).resize( $.proxy( this.adjustBG, this ) );
+		this.adjustBGProxy = $.proxy( this.adjustBG, this );  // need to store a reference to this function, so we can remove the listener in destroy()
+		$( window ).resize( this.adjustBGProxy );
 	};
 	
 	
@@ -262,7 +264,37 @@
 					// This try/catch block is a hack to let it fail gracefully.
 				}
 			}
+		},
+		
+		
+		/**
+		 * Removes the fillmore'd background and resets the container element back to its
+		 * original state. 
+		 * 
+		 * @method destroy
+		 */
+		destroy : function() {
+			// Restore the original position and z-index styles, if Fillmore modified them
+			if( this.containerPositionModified ) {				
+				this.$containerEl.css( 'position', '' );
+			}
+			if( this.containerZIndexModified ) {
+				this.$containerEl.css( 'z-index', '' );
+			}
+			
+			// Restore the original overflow style
+			this.$containerEl.css( 'overflow', this.originalContainerOverflow );
+			
+			// Remove the fillmore element. The child image element will be removed as well.
+			this.$fillmoreEl.remove();
+			
+			// Remove the window resize handler
+			$( window ).unbind( 'resize', this.adjustBGProxy );
+			
+			// Remove the reference to the Fillmore instance from the element
+			this.$containerEl.removeData( 'fillmore' );
 		}
+		
 	} );
 	
 	
@@ -290,9 +322,7 @@
 	
 	// Static jQuery method, to maintain old behavior. This automatically attaches to the body element.
 	$.fillmore = function( src, settings, callback ) {
-		$( document ).ready( function() {
-			$( 'body' ).fillmore( src, settings, callback );
-		} );
+		$( 'body' ).fillmore( src, settings, callback );
 	};
   
 })(jQuery);
