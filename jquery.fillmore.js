@@ -12,9 +12,10 @@
 (function($) {
 	
 	var defaultSettings = {
-		centeredX: true,		 // Should we center the image on the X axis?
-		centeredY: true,		 // Should we center the image on the Y axis?
-		speed: 0				 // fadeIn speed for background after image loads (e.g. "fast" or 500)
+		src       : null, // The src for the image
+		centeredX : true, // Should we center the image on the X axis?
+		centeredY : true, // Should we center the image on the Y axis?
+		speed     : 0     // fadeIn speed for background after image loads (e.g. "fast" or 500)
 	};
 	
 	
@@ -161,7 +162,7 @@
 		 */
 		updateSettings : function( settings ) {
 			this.settings = $.extend( this.settings, settings );
-		}, 
+		},
 		
 		
 		/**
@@ -264,6 +265,17 @@
 					// This try/catch block is a hack to let it fail gracefully.
 				}
 			}
+		},
+		
+		
+		/**
+		 * Retrieves the src of the image that is currently being shown (or is loading).
+		 * 
+		 * @method getSrc
+		 * @return {String} The src of the image currently being shown (or is loading), or null if there is none.
+		 */
+		getSrc : function() {
+			return this.settings.src;
 		},
 		
 		
