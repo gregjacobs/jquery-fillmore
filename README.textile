@@ -5,11 +5,14 @@ The image will stretch to fit the page / element, and will automatically resize 
 
 This was originally a fork of the jquery Backstretch plugin, which only allowed for stretching an image as the background 
 of the page body, but then was rewritten to allow stretching a background image over any desired element as well. Hence the name,
-"Fillmore"; it fills more elements :)  It still maintains the same method parameters as backstretch, and can therefore 
-replace backstretch in your code if you want to start taking advantage of being able to stretch an image over any given element 
-as well (as long as you change the name 'backstretch' to 'fillmore'). 
+"Fillmore"; it fills more elements :)  
 
-The original jquery Backstretch plugin is here: https://github.com/srobbin/jquery-backstretch.  Thanks Scott Robbin.
+The method parameters are different from backstretch however, taking a single 'settings' object (hash) as the first parameter for 
+specifying everything, instead of the 3 parameter method signature that backstretch uses. This was done so that method calls could be made
+on the underlying Fillmore object by providing the first parameter as a string instead of an object, with arguments appended (much
+like how jQuery UI does it). 
+
+The original jquery Backstretch plugin is here btw: https://github.com/srobbin/jquery-backstretch.  Thanks, Scott Robbin.
 
 
 h2. Demo
@@ -30,23 +33,40 @@ Note: The example above uses the Google hosted version of jQuery; there is also 
 
 h2. Usage
 
+General usage of adding an image:
 <pre><code><script type="text/javascript">
   // To stretch an image over the document body
-  $.fillmore( String imgSrc, [Object options], [Function callback] );
+  $.fillmore( Object options );
 
   // The above is equivalent to:
-  $('body').fillmore( String imgSrc, [Object options], [Function callback] );
+  $('body').fillmore( Object options );
 
 
   // To stretch an image over any element(s) (jQuery wrapped set)
-  $('div.myEls').fillmore( String imgSrc, [Object options], [Function callback] );
+  $('div.myEls').fillmore( Object options );
 </script>
 </code></pre>
 
-The callback is executed when a new image has been loaded and faded in.
+Calling methods on the underlying Fillmore object:
+<pre><code><script type="text/javascript">
+  $.fillmore( String methodName, [ Mixed methodArgs... ] );
+
+  // The above is equivalent to:
+  $('body').fillmore( String methodName, [ Mixed methodArgs... ] );
 
 
-h2. Options
+  // And on any jQuery wrapped set
+  $('div.myEls').fillmore( String methodName, [ Mixed methodArgs... ] );
+</script>
+</code></pre>
+The only method of interest at this time however, is the "destroy" method, which removes the Fillmore'd image. See the examples.
+
+
+h2. Settings
+
+h3. src
+
+Required. The src of the image to load. (type=String)
 
 h3. centeredX
 
@@ -60,24 +80,28 @@ h3. speed
 
 This is the speed at which the image will fade in, after downloading is complete. Integers are accepted, as well as standard jQuery speed strings (slow, normal, fast). (type=Integer, default=0)
 
+h3. callback
+
+A function to run when the new image has been loaded and faded in. (type=Function, default=undefined)
+
 
 
 h2. Examples
 
 <pre><code><script type="text/javascript">
   // Add a stretched background image to the page (body)
-  $.fillmore("/path/to/image.jpg", {speed: 150});
+  $.fillmore( { src: "/path/to/image.jpg", speed: 150 } );
 </script>
 </code></pre>
 
 Want to change the background image after Fillmore has been loaded? No problem, just call it again!
 
 <pre><code><script type="text/javascript">
-  $.fillmore("/path/to/image.jpg", {speed: 150});
+  $.fillmore( { src: "/path/to/image.jpg", speed: 150 } );
   
   // Perhaps you'd like to change the image on a button click
   $(".button").click(function() {
-      $.fillmore("/path/to/next_image.jpg");
+      $.fillmore( { src: "/path/to/next_image.jpg" } );
   });
 </script>
 </code></pre>
@@ -86,11 +110,23 @@ Want to change the background image after Fillmore has been loaded? No problem, 
 You may also stretch a background image over any element(s) as well.
 
 <pre><code><script type="text/javascript">
-  $('div').fillmore("/path/to/image.jpg", {speed: 150});
+  $('div').fillmore( { src: "/path/to/image.jpg", speed: 150 } );
   
   // And then changing them at a later time...
   $(".button").click(function() {
-      $('div').fillmore("/path/to/next_image.jpg");
+      $('div').fillmore( { src: "/path/to/next_image.jpg" } );
+  });
+</script>
+</code></pre>
+
+
+Removing the image at a later time:
+<pre><code><script type="text/javascript">
+  $('div').fillmore( { src: "/path/to/image.jpg", speed: 150 } );
+  
+  // Removing the Fillmore'd image
+  $(".button").click(function() {
+      $('div').fillmore( "destroy" );
   });
 </script>
 </code></pre>
@@ -101,7 +137,10 @@ h2. Changelog
 h3. Version 1.0
 
 * Rewrote original jquery Backstretch plugin (https://github.com/srobbin/jquery-backstretch) to be able to stretch a background image over any element; not just the page body.
+* Changed method signature from 3 param backstretch signature to 1 param 'settings' signature.
+* Added a 'destroy' method to remove the Fillmore instance, and reset the container element back to its original state. 
+
 
 h2. Support
 
-Please file a ticket on our Github issues tracker.
+Please file a ticket on our Github issue tracker.

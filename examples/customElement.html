@@ -1,38 +1,38 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <style>
-        body { font-family: Helvetica, Arial, sans-serif; }
-        .container {
-            width: 90%;
-            margin: 20px auto;
-            background-color: #FFF;
-            padding: 20px;
-            color: blue;
-            height: 500px;
-        }
-        pre { border: 1px solid #CCC; background-color: #EEE; color: #333; padding: 10px; }
-    </style>
+	<meta charset="utf-8" />
+	<style>
+		body { font-family: Helvetica, Arial, sans-serif; }
+		.container {
+			width: 90%;
+			margin: 20px auto;
+			background-color: #FFF;
+			padding: 20px;
+			color: blue;
+			height: 500px;
+		}
+		pre { border: 1px solid #CCC; background-color: #EEE; color: #333; padding: 10px; }
+	</style>
 </head>
 <body>
-    <div class="container">
-        <h1>Custom Element Demo</h1>
-        <p>This is a demo of jQuery Fillmore in a custom element. It is a simple example of loading one image onto the background, and another into that element.</p>
-        <pre><code>
+	<div class="container">
+		<h1>Custom Element Demo</h1>
+		<p>This is a demo of jQuery Fillmore in a custom element. It is a simple example of loading one image onto the background, and another into that element.</p>
+		<pre><code>
 &lt;script src=&quot;../lib/jquery-1.6.2.min.js&quot;&gt;&lt;/script&gt;
 &lt;script src=&quot;../jquery.fillmore.js&quot;&gt;&lt;/script&gt;
 &lt;script&gt;
-    $.fillmore( &quot;pot-holder.jpg&quot; );
-    $( '.container' ).fillmore( &quot;coffee.jpg&quot; );
+	$.fillmore( { src: &quot;pot-holder.jpg&quot; } );
+	$( '.container' ).fillmore( { src: &quot;coffee.jpg&quot; } );
 &lt;/script&gt;
-        </code></pre>
-    </div>
-    <script src="../lib/jquery-1.6.2.min.js"></script>
-    <script src="../jquery.fillmore.js"></script>
-    <script>
-        $.fillmore( "pot-holder.jpg", { speed: 250 } );
-        $( '.container' ).fillmore( "coffee.jpg" );
-    </script>
+		</code></pre>
+	</div>
+	<script src="../lib/jquery-1.6.2.min.js"></script>
+	<script src="../jquery.fillmore.js"></script>
+	<script>
+		$.fillmore( { src: "pot-holder.jpg", speed: 250 } );
+		$( '.container' ).fillmore( { src: "coffee.jpg" } );
+	</script>
 </body>
 </html>

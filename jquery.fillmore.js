@@ -302,7 +302,8 @@
 	
 	
 	// jQuery Plugin Code
-	$.fn.fillmore = function( src, settings, callback ) {
+	// 'settings' may be an object of the settings for fillmore, or a string for a method name to call
+	$.fn.fillmore = function( settings ) {
 		return this.each( function( idx, el ) {
 			// Create an instance on the element if there is none yet
 			var $el = $( el ),
@@ -314,15 +315,21 @@
 			}
 			
 			
-			fillmore.updateSettings( settings );
-			fillmore.showImage( src, callback );
+			if( typeof settings === 'object' ) {
+				fillmore.updateSettings( settings );
+				fillmore.showImage( settings.src, settings.callback );
+				
+			} else if( typeof settings === 'string' ) {
+				// 'settings' is a string, it must be a method call
+				fillmore[ settings ].apply( fillmore, Array.prototype.slice.call( arguments, 1 ) );
+			}
 		} );
 	};
 	
 	
-	// Static jQuery method, to maintain old behavior. This automatically attaches to the body element.
-	$.fillmore = function( src, settings, callback ) {
-		$( 'body' ).fillmore( src, settings, callback );
+	// Static jQuery method, to maintain the old behavior of automatically attaching the image to the document body.
+	$.fillmore = function( settings ) {
+		$( 'body' ).fillmore( settings );
 	};
   
 })(jQuery);
