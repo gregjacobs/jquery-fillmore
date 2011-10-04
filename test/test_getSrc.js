@@ -27,6 +27,19 @@
 	} );
 	
 	
+	test( "should return the src of the image of the element after it has been changed", 2, function() {
+		var $fixture = $( '#qunit-fixture' );
+		
+		// Initial src
+		$fixture.fillmore( { src : '../examples/coffee.jpg' } );
+		strictEqual( $fixture.fillmore( 'getSrc' ), '../examples/coffee.jpg' );
+		
+		// Changed src
+		$fixture.fillmore( { src : '../examples/pot-holder.jpg' } );
+		strictEqual( $fixture.fillmore( 'getSrc' ), '../examples/pot-holder.jpg' );
+	} );
+	
+	
 	test( "should return the src of the image of the first element in the wrapped set", 1, function() {
 		var $fixture = $( '#qunit-fixture' );
 		for( var i = 1; i <= 3; i++ ) {
