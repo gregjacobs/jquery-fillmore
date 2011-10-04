@@ -70,8 +70,8 @@
 			.appendTo( $containerEl );
 		
 		// Add a handler to adjust the background size when the window is resized or orientation has changed (iOS)
-		this.adjustBGProxy = $.proxy( this.adjustBG, this );  // need to store a reference to this function, so we can remove the listener in destroy()
-		$( window ).resize( this.adjustBGProxy );
+		this.resizeProxy = $.proxy( this.resize, this );  // need to store a reference to this function, so we can remove the listener in destroy()
+		$( window ).resize( this.resizeProxy );
 	};
 	
 	
@@ -205,7 +205,7 @@
 			// Store the image ratio
 			this.imgRatio = imgWidth / imgHeight;
 			
-			this.adjustBG();
+			this.resize();
 			
 			this.$imgEl.fadeIn( this.settings.speed, function() {
 				// Remove the old images (if any exist), and remove them
@@ -220,12 +220,11 @@
 		
 		
 		/**
-		 * Adjusts the background image.
+		 * Resizes the background image to the proper size, and fixes its position based on the container size.
 		 * 
-		 * @private
-		 * @method adjustBG
+		 * @method resize
 		 */
-		adjustBG : function() {
+		resize : function() {
 			if( this.$imgEl ) {  // make sure the image has been created, in case of a resize that happens too early
 				try {
 					var settings = this.settings,
@@ -261,7 +260,7 @@
 					this.$imgEl.width( bgWidth ).height( bgHeight ).css( bgCSS );
 					
 				} catch( err ) {
-					// IE7 seems to trigger _adjustBG before the image is loaded.
+					// IE7 seems to trigger resize() before the image is loaded.
 					// This try/catch block is a hack to let it fail gracefully.
 				}
 			}
@@ -301,7 +300,7 @@
 			this.$fillmoreEl.remove();
 			
 			// Remove the window resize handler
-			$( window ).unbind( 'resize', this.adjustBGProxy );
+			$( window ).unbind( 'resize', this.resizeProxy );
 		}
 		
 	} );
@@ -335,6 +334,16 @@
 			} else {
 				return undefined;
 			}
+		},
+		
+		resize : function() {
+			for( var i = 0, len = this.length; i < len; i++ ) {
+				var $el = $( this[ i ] ), fillmore = $el.data( 'fillmore' );
+				if( fillmore ) {
+					fillmore.resize();
+				}
+			}
+			return this;
 		},
 		
 		destroy : function() {
