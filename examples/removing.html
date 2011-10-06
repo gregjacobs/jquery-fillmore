@@ -35,7 +35,6 @@
 	
 	$(&quot;#removeBg&quot;).click(function() {
 		$.fillmore( &quot;destroy&quot; );
-		$( '.container' ).fillmore( &quot;destroy&quot; );
 	});
 &lt;/script&gt;
 		</code></pre>
@@ -48,12 +47,10 @@
 		
 		$("#applyBg").click(function() {
 			$.fillmore( { src: "pot-holder.jpg" } );
-			$( '.container' ).fillmore( { src: 'coffee.jpg' } );
 		});
 		
 		$("#removeBg").click(function() {
 			$.fillmore( "destroy" );
-			$( '.container' ).fillmore( "destroy" );
 		});
 	</script>
 </body>
