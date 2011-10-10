@@ -209,6 +209,14 @@
 			var img = evt.target,
 				$fillmoreEl = this.$fillmoreEl;
 			
+			// If the image that has loaded is not the current image (the latest image), simply return out. 
+			// We will "throw away" this image, as a new one is currently loading. This fixes a weird issue
+			// where the fadeIn() method's callback will continually be called if a new image is requested
+			// while one or more old ones are still loading.
+			if( img !== this.$imgEl[ 0 ] ) {
+				return;
+			}
+			
 			this.$imgEl.css( { width: "auto", height: "auto" } );
 			
 			var imgWidth = img.width || this.$imgEl.width(),
