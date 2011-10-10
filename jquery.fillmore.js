@@ -150,6 +150,15 @@
 		 * @type jQuery
 		 */
 		
+		/**
+		 * Flag to determine if the image that is to be shown is fully loaded and faded in.
+		 * 
+		 * @private
+		 * @property loaded
+		 * @type Boolean
+		 */
+		loaded : false,
+		
 		
 		// ------------------------------------
 		
@@ -175,6 +184,9 @@
 		showImage : function( src, callback ) {
 			// Mark any old image(s) for removal. They will be removed when the new image loads.
 			this.$fillmoreEl.find( 'img' ).addClass( 'deletable' );
+			
+			// Reset flag since we're showing a new image
+			this.loaded = false;
 			
 			// Create a new image element
 			this.$imgEl = $( '<img style="position: absolute; display: none; margin: 0; padding: 0; border: none; z-index: -999999;" />' )
@@ -207,15 +219,17 @@
 			
 			this.resize();
 			
-			this.$imgEl.fadeIn( this.settings.speed, function() {
+			this.$imgEl.fadeIn( this.settings.speed, jQuery.proxy( function() {
 				// Remove the old images (if any exist), and remove them
 				$fillmoreEl.find( 'img.deletable' ).remove();
+				
+				this.loaded = true;
 				
 				// Callback
 				if( typeof callback === "function" ) {
 					callback();
 				}
-			} );
+			}, this ) );
 		},
 		
 		
@@ -264,6 +278,17 @@
 					// This try/catch block is a hack to let it fail gracefully.
 				}
 			}
+		},
+		
+		
+		/**
+		 * Determines if the image is currently loaded, and has been faded in.
+		 * 
+		 * @method isLoaded
+		 * @return {Boolean} True if the image is fully loaded and faded in. False otherwise.
+		 */
+		isLoaded : function() {
+			return this.loaded;
 		},
 		
 		
@@ -325,6 +350,15 @@
 				fillmore.showImage( settings.src, settings.callback );				
 			}
 			return this;
+		},
+		
+		isLoaded : function() {
+			var el = this[ 0 ], fillmore;
+			if( el && ( fillmore = $( el ).data( 'fillmore' ) ) ) {
+				return fillmore.isLoaded();
+			} else {
+				return false;  // element isn't fillmore'd, return false
+			}
 		},
 		
 		getSrc : function() {
