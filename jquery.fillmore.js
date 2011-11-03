@@ -152,7 +152,17 @@
 		 */
 		
 		/**
-		 * Flag to determine if the image that is to be shown is fully loaded and faded in.
+		 * Flag to determine if the image itself is currently loaded. This flag is reset back to false
+		 * when a new image is loaded.
+		 * 
+		 * @private
+		 * @property imgLoaded
+		 * @type Boolean
+		 */
+		imgLoaded : false,
+		
+		/**
+		 * Flag to determine if the image is fully loaded, <b>and</b> has been faded in.
 		 * 
 		 * @private
 		 * @property loaded
@@ -186,7 +196,8 @@
 			// Mark any old image(s) for removal. They will be removed when the new image loads.
 			this.$fillmoreEl.find( 'img' ).addClass( 'deletable' );
 			
-			// Reset flag since we're showing a new image
+			// Reset flags since we're showing a new image
+			this.imgLoaded = false;
 			this.loaded = false;
 			
 			// Create a new image element
@@ -218,14 +229,15 @@
 				return;
 			}
 			
+			this.imgLoaded = true;
+			
 			this.$imgEl.css( { width: "auto", height: "auto" } );
 			
 			var imgWidth = img.width || this.$imgEl.width(),
 				imgHeight = img.height || this.$imgEl.height();
 			
-			// Store the image ratio
+			// Store the image ratio, and resize
 			this.imgRatio = imgWidth / imgHeight;
-			
 			this.resize();
 			
 			this.$imgEl.fadeIn( this.settings.speed, jQuery.proxy( function() {
@@ -248,7 +260,7 @@
 		 * @method resize
 		 */
 		resize : function() {
-			if( this.$imgEl ) {  // make sure the image has been created, in case of a resize that happens too early
+			if( this.$imgEl && this.imgLoaded ) {  // make sure the image has been created and loaded, in case of a resize that happens too early
 				try {
 					var settings = this.settings,
 						$containerEl = this.$containerEl,
@@ -285,6 +297,7 @@
 				} catch( err ) {
 					// IE7 seems to trigger resize() before the image is loaded.
 					// This try/catch block is a hack to let it fail gracefully.
+					// This is a holdover from jQuery Backstretch. Keeping this here just in case.
 				}
 			}
 		},
