@@ -202,7 +202,7 @@
 			
 			// Create a new image element
 			this.$imgEl = $( '<img style="position: absolute; display: none; margin: 0; padding: 0; border: none; z-index: -999999;" />' )
-				.bind( 'load', $.proxy( function( evt ) { this.onImageLoaded( evt, callback ); }, this ) )
+				.bind( 'load error', $.proxy( function( evt ) { this.onImageLoaded( evt, callback ); }, this ) )
 				.appendTo( this.$fillmoreEl );
 							
 			this.$imgEl.attr( "src", src ); // Hack for IE img onload event
