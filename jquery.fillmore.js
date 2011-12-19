@@ -37,25 +37,122 @@
 
 	
 	$.extend( Fillmore.prototype, {
+		
 		init : function( containerEl ) {
 			// Start with the default settings (need a copy)
 			this.settings = $.extend( {}, defaultSettings );
 			
 			this.$containerEl = this.$containerSizingEl = $( containerEl );
+		},
+
+		
+		/**
+		 * Updates the settings of the instance with any new settings supplied.
+		 *
+		 * @method updateSettings
+		 * @property {Object} settings An object (hash) of settings. Current options include: 'centeredX' (Boolean), 'centeredY' (Boolean), and 'speed' (Int).  
+		 */
+		updateSettings : function( settings ) {
+			this.settings = $.extend( this.settings, settings );
+		},
+
+
+		/**
+		 * Abstract method to initialize the Fillmore plugin on an element.
+		 *
+		 * @method showImage
+		 * @param {String} src The src for the image to show.
+		 * @param {Function} callback (optional) A callback to call when the image has loaded and faded in.
+		 */
+		showImage : function( src, callback ) {
+			throw "abstract method: showImage() must be implemented by subclasses";
+		},
+
+
+		/**
+		 * Abstract method to remove the Fillmore from the selected elements.
+		 *
+		 * @method destroy
+		 */
+		destroy : function() {
+			throw "abstract method: destroy() must be implemented by subclasses";
 		}
+
 	} );
 
 
 	var FillmoreCss3 = function( containerEl ) {
-		throw "not yet implemented";
-
 		this.init( containerEl );
 	};
 
 	$.extend( FillmoreCss3.prototype, Fillmore.prototype, {
-		init : function(){
+
+		init : function( containerEl ){
 			Fillmore.prototype.init.apply( this, arguments );
+
+			this.$containerEl.css({
+				'background-position' : 'center',
+				'background-repeat' : 'no-repeat',
+				'background-size' : 'cover'
+			});
+		},
+
+
+		/**
+		 * Initializes the Fillmore plugin on an element.
+		 *
+		 * @method showImage
+		 * @param {String} src The src for the image to show.
+		 * @param {Function} callback (optional) A callback to call when the image has loaded and faded in.
+		 */
+		showImage : function( src, callback ) {
+			// TODO fade in
+			
+			if( typeof callback === "function" ) {
+				// create an Image object so we can execute the callback after the 'load' event
+				var img = new Image(),
+					self = this;
+				
+				img.src = src;
+				img.onload = function(){
+					self.setImageSrc( src );
+					callback();
+				};
+
+			} else {
+				// no callback - don't bother with the Image object
+				this.setImageSrc( src );
+			}
+		},
+
+
+		/**
+		 * Sets the background image on the container.
+		 *
+		 * @method setImageSrc
+		 * @param {String} src The src for the image to show.
+		 */
+		setImageSrc : function( src ){
+			this.$containerEl.css({
+				'background-image' : "url('" + src + "')"
+			});
+		},
+
+
+		/**
+		 * Removes the background image properties from the selected elements.
+		 *
+		 * @method destroy
+		 */
+		destroy : function() {
+			this.$containerEl.css({
+				'background-image' : '',
+				'background-position' : '',
+				'background-repeat' : '',
+				'background-size' : ''
+			});
 		}
+
 	} );
 
 
@@ -211,17 +308,6 @@
 			$( window ).resize( this.resizeProxy );
 		},
 
-		
-		/**
-		 * Updates the settings of the instance with any new settings supplied.
-		 *
-		 * @method updateSettings
-		 * @property {Object} settings An object (hash) of settings. Current options include: 'centeredX' (Boolean), 'centeredY' (Boolean), and 'speed' (Int).  
-		 */
-		updateSettings : function( settings ) {
-			this.settings = $.extend( this.settings, settings );
-		},
-
 
 		/**
 		 * Initializes the Fillmore plugin on an element.
@@ -370,6 +456,9 @@
 		 * @method destroy
 		 */
 		destroy : function() {
+			Fillmore.prototype.destroy.apply( this, arguments );
+
+
 			// Restore the original position and z-index styles, if Fillmore modified them
 			if( this.containerPositionModified ) {				
 				this.$containerEl.css( 'position', '' );
@@ -403,8 +492,11 @@
 				
 				// Create an instance on the element if there is none yet
 				if( !fillmore ) {
-					// TODO use FillmoreCss3 if it's supported
-					fillmore = new FillmoreOldBrowser( el );
+					if ( Modernizr.backgroundsize ) {
+						fillmore = new FillmoreCss3( el );
+					} else {
+						fillmore = new FillmoreOldBrowser( el );	
+					}
 
 					$el.data( 'fillmore', fillmore );
 				}
@@ -469,9 +561,9 @@
 	};
 	
 	
-	// Static jQuery method, to maintain the old behavior of automatically attaching the image to the document body.
+	// Static jQuery method, to maintain the old behavior of automatically attaching the image to the full page.
 	$.fillmore = function( settings ) {
-		return $( 'body' ).fillmore( settings );
+		return $( 'html' ).css( 'min-height', '100%' ).fillmore( settings );
 	};
   
 })(jQuery);
