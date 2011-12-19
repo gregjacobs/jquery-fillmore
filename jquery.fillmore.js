@@ -28,55 +28,42 @@
 	 * The constructor initializes the properties and elements that the plugin will use.
 	 *
 	 * @constructor
-	 * @property {HTMLElement|jquery} containerEl The container element where a fillmore'd image should be placed.
+	 * @property {HTMLElement/jquery} containerEl The container element where a fillmore'd image should be placed.
 	 */
 	var Fillmore = function( containerEl ) {
-		var fillmoreElPosition = 'absolute';  // will be set to fixed if using the body element as the container element
-		
-		// Start with the default settings (need a copy)
-		this.settings = $.extend( {}, defaultSettings );
-		
-		
-		var $containerEl = this.$containerEl = this.$containerSizingEl = $( containerEl );
-		
-		// Make sure the container element has a transparent background, so we can see the stretched image
-		$containerEl.css( 'background', 'transparent' );
-		
-		if( $containerEl.is( 'body' ) ) {
-			this.$containerSizingEl = ( 'onorientationchange' in window ) ? $( document ) : $( window ); // hack to acccount for iOS position:fixed shortcomings
-			fillmoreElPosition = 'fixed';
-			
-		} else {
-			// Make sure we cut the image off at the end of the container element
-			this.originalContainerOverflow = $containerEl[ 0 ].style.overflow;
-			$containerEl.css( 'overflow', 'hidden' );
-			
-			// Make sure the container element has a positioning context, so we can position the $fillmoreEl inside it. Must be absolute/relative/fixed.
-			// It doesn't need a positioning context if the element is the document body however, as that already has a positioning context.
-			if( $containerEl.css( 'position' ) === 'static' ) {  // computed style is 'static', i.e. no positioning context
-				$containerEl.css( 'position', 'relative' );
-				this.containerPositionModified = true;
-			}
-			
-			// If the element doesn't have a z-index value, we need to give it one to create a stacking context.
-			if( $containerEl.css( 'z-index' ) === 'auto' ) {
-				$containerEl.css( 'z-index', 0 );
-				this.containerZIndexModified = true;  // Flag to tell the destroy() method that we modified the zIndex style, to reset it
-			}
-		}
-		
-		
-		// The div element that will be placed inside the container, with the image placed inside of it
-		this.$fillmoreEl = $( '<div style="left: 0; top: 0; position: ' + fillmoreElPosition + '; overflow: hidden; z-index: -999999; margin: 0; padding: 0; height: 100%; width: 100%;" />' )
-			.appendTo( $containerEl );
-		
-		// Add a handler to adjust the background size when the window is resized or orientation has changed (iOS)
-		this.resizeProxy = $.proxy( this.resize, this );  // need to store a reference to this function, so we can remove the listener in destroy()
-		$( window ).resize( this.resizeProxy );
+		this.init( containerEl );
 	};
-	
+
+
 	
 	$.extend( Fillmore.prototype, {
+		init : function( containerEl ) {
+			// Start with the default settings (need a copy)
+			this.settings = $.extend( {}, defaultSettings );
+			
+			this.$containerEl = this.$containerSizingEl = $( containerEl );
+		}
+	} );
+
+
+	var FillmoreCss3 = function( containerEl ) {
+		throw "not yet implemented";
+
+		this.init( containerEl );
+	};
+
+	$.extend( FillmoreCss3.prototype, Fillmore.prototype, {
+		init : function(){
+			Fillmore.prototype.init.apply( this, arguments );
+		}
+	} );
+
+
+	var FillmoreOldBrowser = function( containerEl ) {
+		this.init( containerEl );
+	};
+	
+	$.extend( FillmoreOldBrowser.prototype, Fillmore.prototype, {
 		
 		/**
 		 * The configured settings (options) for the instance. This is initialized
@@ -173,6 +160,57 @@
 		
 		// ------------------------------------
 		
+
+		/**
+		 * Initializes the special Fillmore element, which is nested inside the containerEl and acts as
+		 * the parent of the image.  This is only needed in browsers where background-size:cover isn't
+		 * supported.
+		 *
+		 * @method init
+		 */
+		init : function( containerEl ) {
+			Fillmore.prototype.init.apply( this, arguments );
+
+
+			var fillmoreElPosition = 'absolute',  // will be set to fixed if using the body element as the container element
+				$containerEl = this.$containerEl;
+
+			// Make sure the container element has a transparent background, so we can see the stretched image
+			$containerEl.css( 'background', 'transparent' );
+			
+			if( $containerEl.is( 'body' ) ) {
+				this.$containerSizingEl = ( 'onorientationchange' in window ) ? $( document ) : $( window ); // hack to acccount for iOS position:fixed shortcomings
+				fillmoreElPosition = 'fixed';
+				
+			} else {
+				// Make sure we cut the image off at the end of the container element
+				this.originalContainerOverflow = $containerEl[ 0 ].style.overflow;
+				$containerEl.css( 'overflow', 'hidden' );
+				
+				// Make sure the container element has a positioning context, so we can position the $fillmoreEl inside it. Must be absolute/relative/fixed.
+				// It doesn't need a positioning context if the element is the document body however, as that already has a positioning context.
+				if( $containerEl.css( 'position' ) === 'static' ) {  // computed style is 'static', i.e. no positioning context
+					$containerEl.css( 'position', 'relative' );
+					this.containerPositionModified = true;
+				}
+				
+				// If the element doesn't have a z-index value, we need to give it one to create a stacking context.
+				if( $containerEl.css( 'z-index' ) === 'auto' ) {
+					$containerEl.css( 'z-index', 0 );
+					this.containerZIndexModified = true;  // Flag to tell the destroy() method that we modified the zIndex style, to reset it
+				}
+			}
+			
+			
+			// The div element that will be placed inside the container, with the image placed inside of it
+			this.$fillmoreEl = $( '<div style="left: 0; top: 0; position: ' + fillmoreElPosition + '; overflow: hidden; z-index: -999999; margin: 0; padding: 0; height: 100%; width: 100%;" />' )
+				.appendTo( $containerEl );
+			
+			// Add a handler to adjust the background size when the window is resized or orientation has changed (iOS)
+			this.resizeProxy = $.proxy( this.resize, this );  // need to store a reference to this function, so we can remove the listener in destroy()
+			$( window ).resize( this.resizeProxy );
+		},
+
 		
 		/**
 		 * Updates the settings of the instance with any new settings supplied.
@@ -183,8 +221,8 @@
 		updateSettings : function( settings ) {
 			this.settings = $.extend( this.settings, settings );
 		},
-		
-		
+
+
 		/**
 		 * Initializes the Fillmore plugin on an element.
 		 *
@@ -365,7 +403,10 @@
 				
 				// Create an instance on the element if there is none yet
 				if( !fillmore ) {
-					$el.data( 'fillmore', fillmore = new Fillmore( el ) );
+					// TODO use FillmoreCss3 if it's supported
+					fillmore = new FillmoreOldBrowser( el );
+
+					$el.data( 'fillmore', fillmore );
 				}
 				
 				fillmore.updateSettings( settings );
@@ -434,3 +475,11 @@
 	};
   
 })(jQuery);
+
+
+if( ( typeof Modernizr === 'undefined' ) || !( 'backgroundsize' in Modernizr ) ) {
+	/* Modernizr 2.0.6 (Custom Build) | MIT & BSD
+	 * Build: http://www.modernizr.com/download/#-backgroundsize-testprop-testallprops-domprefixes
+	 */
+	;window.Modernizr=function(a,b,c){function z(a,b){var c=a.charAt(0).toUpperCase()+a.substr(1),d=(a+" "+m.join(c+" ")+c).split(" ");return y(d,b)}function y(a,b){for(var d in a)if(j[a[d]]!==c)return b=="pfx"?a[d]:!0;return!1}function x(a,b){return!!~(""+a).indexOf(b)}function w(a,b){return typeof a===b}function v(a,b){return u(prefixes.join(a+";")+(b||""))}function u(a){j.cssText=a}var d="2.0.6",e={},f=b.documentElement,g=b.head||b.getElementsByTagName("head")[0],h="modernizr",i=b.createElement(h),j=i.style,k,l=Object.prototype.toString,m="Webkit Moz O ms Khtml".split(" "),n={},o={},p={},q=[],r,s={}.hasOwnProperty,t;!w(s,c)&&!w(s.call,c)?t=function(a,b){return s.call(a,b)}:t=function(a,b){return b in a&&w(a.constructor.prototype[b],c)},n.backgroundsize=function(){return z("backgroundSize")};for(var A in n)t(n,A)&&(r=A.toLowerCase(),e[r]=n[A](),q.push((e[r]?"":"no-")+r));u(""),i=k=null,e._version=d,e._domPrefixes=m,e.testProp=function(a){return y([a])},e.testAllProps=z;return e}(this,this.document);
+}
