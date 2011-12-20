@@ -62,6 +62,15 @@
 		 * @property $fillmoreEl
 		 * @type jQuery
 		 */
+
+		/**
+		 * Flag to determine if the image is fully loaded, <b>and</b> has been faded in.
+		 * 
+		 * @private
+		 * @property loaded
+		 * @type Boolean
+		 */
+		loaded : false,
 		
 		
 		/**
@@ -145,6 +154,57 @@
 
 
 		/**
+		 * Method that is called when the image is loaded.
+		 *
+		 * @private
+		 * @method onImageLoaded
+		 * @param {jQuery.Event} evt
+		 * @param {Function} callback (optional) A callback to call when the image has loaded and faded in.
+		 */
+		onImageLoaded : function( evt, callback ) {
+			this.getImageEl().fadeIn( this.settings.speed, jQuery.proxy( this.onImageVisible, this ) );
+		},
+
+
+		/**
+		 * Method that is called when the image becomes fully visible.
+		 *
+		 * @private
+		 * @method onImageVisible
+		 * @param {Function} callback (optional) A callback to call when the image has loaded and faded in.
+		 */
+		onImageVisible : function( callback ) {
+			this.loaded = true;
+			
+			if( typeof callback === "function" ) {
+				callback();
+			}
+		},
+
+
+		/**
+		 * Determines if the image is currently loaded, and has been faded in.
+		 * 
+		 * @method isLoaded
+		 * @return {Boolean} True if the image is fully loaded and faded in. False otherwise.
+		 */
+		isLoaded : function() {
+			return this.loaded;
+		},
+		
+		
+		/**
+		 * Retrieves the src of the image that is currently being shown (or is loading).
+		 * 
+		 * @method getSrc
+		 * @return {String} The src of the image currently being shown (or is loading), or null if there is none.
+		 */
+		getSrc : function() {
+			return this.settings.src;
+		},
+
+
+		/**
 		 * Abstract method to remove the Fillmore from the selected elements.
 		 *
 		 * @method destroy
@@ -198,36 +258,18 @@
 		 * @param {Function} callback (optional) A callback to call when the image has loaded and faded in.
 		 */
 		showImage : function( src, callback ) {
-			// TODO fade in
+			// create an Image object so we can execute the callback after the 'load' event
+			var img = new Image(),
+				self = this;
 			
-			if( typeof callback === "function" ) {
-				// create an Image object so we can execute the callback after the 'load' event
-				var img = new Image(),
-					self = this;
-				
-				img.src = src;
-				img.onload = function(){
-					self.setImageSrc( src );
-					callback();
-				};
+			img.src = src;
+			img.onload = $.proxy( function( e ){
+				this.getImageEl().css({
+					'background-image' : "url('" + src + "')"
+				});
 
-			} else {
-				// no callback - don't bother with the Image object
-				this.setImageSrc( src );
-			}
-		},
-
-
-		/**
-		 * Sets the background image on the container.
-		 *
-		 * @method setImageSrc
-		 * @param {String} src The src for the image to show.
-		 */
-		setImageSrc : function( src ){
-			this.getImageEl().css({
-				'background-image' : "url('" + src + "')"
-			});
+				this.onImageLoaded( e, callback, src );
+			}, this );
 		},
 
 
@@ -312,15 +354,6 @@
 		 */
 		imgLoaded : false,
 		
-		/**
-		 * Flag to determine if the image is fully loaded, <b>and</b> has been faded in.
-		 * 
-		 * @private
-		 * @property loaded
-		 * @type Boolean
-		 */
-		loaded : false,
-		
 		
 		// ------------------------------------
 		
@@ -392,7 +425,6 @@
 		 */
 		onImageLoaded : function( evt, callback ) {
 			var img = evt.target,
-				$fillmoreEl = this.$fillmoreEl,
 				$imageEl = this.getImageEl();
 			
 			// If the image that has loaded is not the current image (the latest image), simply return out. 
@@ -402,6 +434,8 @@
 			if( img !== $imageEl[ 0 ] ) {
 				return;
 			}
+
+			Fillmore.prototype.onImageLoaded.apply( this, arguments );
 			
 			this.imgLoaded = true;
 			
@@ -413,18 +447,21 @@
 			// Store the image ratio, and resize
 			this.imgRatio = imgWidth / imgHeight;
 			this.resize();
-			
-			$imageEl.fadeIn( this.settings.speed, jQuery.proxy( function() {
-				// Remove the old images (if any exist), and remove them
-				$fillmoreEl.find( 'img.deletable' ).remove();
-				
-				this.loaded = true;
-				
-				// Callback
-				if( typeof callback === "function" ) {
-					callback();
-				}
-			}, this ) );
+		},
+
+
+		/**
+		 * Method that is called when the image becomes fully visible.
+		 *
+		 * @private
+		 * @method onImageVisible
+		 * @param {Function} callback (optional) A callback to call when the image has loaded and faded in.
+		 */
+		onImageVisible : function( callback ) {
+			Fillmore.prototype.onImageVisible.apply( this, arguments );
+
+			// Remove the old images (if any exist), and remove them
+            this.$fillmoreEl.find( 'img.deletable' ).remove();
 		},
 		
 		
@@ -474,28 +511,6 @@
 					// This is a holdover from jQuery Backstretch. Keeping this here just in case.
 				}
 			}
-		},
-		
-		
-		/**
-		 * Determines if the image is currently loaded, and has been faded in.
-		 * 
-		 * @method isLoaded
-		 * @return {Boolean} True if the image is fully loaded and faded in. False otherwise.
-		 */
-		isLoaded : function() {
-			return this.loaded;
-		},
-		
-		
-		/**
-		 * Retrieves the src of the image that is currently being shown (or is loading).
-		 * 
-		 * @method getSrc
-		 * @return {String} The src of the image currently being shown (or is loading), or null if there is none.
-		 */
-		getSrc : function() {
-			return this.settings.src;
 		},
 		
 		
