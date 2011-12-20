@@ -1,11 +1,11 @@
 /*!
  * jQuery Fillmore
  * Version 1.0.0
- * https://github.com/Gjslick/jquery-fillmore
+ * https://github.com/gregjacobs/jquery-fillmore
  *
  * Add a dynamically-resized background image to any element
  *
- * Copyright (c) 2011 Gregory Jacobs (jux.com)
+ * Copyright (c) 2011 Gregory Jacobs with Aidan Feldman (jux.com)
  * Dual licensed under the MIT and GPL licenses.
  */
 
