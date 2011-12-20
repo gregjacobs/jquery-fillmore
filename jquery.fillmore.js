@@ -162,7 +162,11 @@
 		 * @param {Function} callback (optional) A callback to call when the image has loaded and faded in.
 		 */
 		onImageLoaded : function( evt, callback ) {
-			this.getImageEl().fadeIn( this.settings.speed, jQuery.proxy( this.onImageVisible, this ) );
+			this.getImageEl()
+				.hide()
+				.fadeIn( this.settings.speed, jQuery.proxy( function(){
+					this.onImageVisible( callback );
+				}, this ) );
 		},
 
 
@@ -461,7 +465,7 @@
 			Fillmore.prototype.onImageVisible.apply( this, arguments );
 
 			// Remove the old images (if any exist), and remove them
-            this.$fillmoreEl.find( 'img.deletable' ).remove();
+			this.$fillmoreEl.find( 'img.deletable' ).remove();
 		},
 		
 		
