@@ -37,12 +37,76 @@
 
 	
 	$.extend( Fillmore.prototype, {
+
+		/**
+		 * The configured settings (options) for the instance. This is initialized
+		 * to just the default settings, and is updated via the {@link #updateSettings} method.
+		 * 
+		 * @private
+		 * @property settings
+		 * @type Object
+		 */
 		
+		/**
+		 * The container element that is having a fillmore'd image applied to it.
+		 * 
+		 * @private
+		 * @property $containerEl
+		 * @type jQuery
+		 */
+
+		/**
+		 * The element which will hold the fillmore'd image.
+		 * 
+		 * @private
+		 * @property $fillmoreEl
+		 * @type jQuery
+		 */
+		
+		
+		/**
+		 * Initializes the special Fillmore element, which is nested inside the containerEl and acts as
+		 * the container of the image.
+		 *
+		 * @method init
+		 * @property {HTMLElement/jquery} containerEl The container element where a fillmore'd image should be placed.
+		 */
 		init : function( containerEl ) {
 			// Start with the default settings (need a copy)
 			this.settings = $.extend( {}, defaultSettings );
 			
-			this.$containerEl = this.$containerSizingEl = $( containerEl );
+			var fillmoreElPosition = 'absolute',  // will be set to fixed if using the body element as the container element
+				$containerEl = this.$containerEl = $( containerEl );
+
+			// Make sure the container element has a transparent background, so we can see the stretched image
+			$containerEl.css( 'background', 'transparent' );
+			
+			if( $containerEl.is( 'body' ) ) {
+				fillmoreElPosition = 'fixed';
+				
+			} else {
+				// Make sure we cut the image off at the end of the container element
+				this.originalContainerOverflow = $containerEl[ 0 ].style.overflow;
+				$containerEl.css( 'overflow', 'hidden' );
+				
+				// Make sure the container element has a positioning context, so we can position the $fillmoreEl inside it. Must be absolute/relative/fixed.
+				// It doesn't need a positioning context if the element is the document body however, as that already has a positioning context.
+				if( $containerEl.css( 'position' ) === 'static' ) {  // computed style is 'static', i.e. no positioning context
+					$containerEl.css( 'position', 'relative' );
+					this.containerPositionModified = true;
+				}
+				
+				// If the element doesn't have a z-index value, we need to give it one to create a stacking context.
+				if( $containerEl.css( 'z-index' ) === 'auto' ) {
+					$containerEl.css( 'z-index', 0 );
+					this.containerZIndexModified = true;  // Flag to tell the destroy() method that we modified the zIndex style, to reset it
+				}
+			}
+			
+			
+			// The div element that will be placed inside the container, with the image placed inside of it
+			this.$fillmoreEl = $( '<div style="left: 0; top: 0; position: ' + fillmoreElPosition + '; overflow: hidden; z-index: -999999; margin: 0; padding: 0; height: 100%; width: 100%;" />' )
+				.appendTo( $containerEl );
 		},
 
 		
@@ -54,6 +118,17 @@
 		 */
 		updateSettings : function( settings ) {
 			this.settings = $.extend( this.settings, settings );
+		},
+
+
+		/**
+		 * Abstract method to retrieve the element that has the image attached.
+		 *
+		 * @method getImageEl
+		 * @return {jQuery}
+		 */
+		getImageEl : function() {
+			throw "abstract method: getImageEl() must be implemented by subclasses";
 		},
 
 
@@ -87,14 +162,31 @@
 
 	$.extend( FillmoreCss3.prototype, Fillmore.prototype, {
 
+		/**
+		 * Adds properties to the fillmoreEl needed for background-sizing.
+		 *
+		 * @method init
+		 * @property {HTMLElement/jquery} containerEl The container element where a fillmore'd image should be placed.
+		 */
 		init : function( containerEl ){
 			Fillmore.prototype.init.apply( this, arguments );
 
-			this.$containerEl.css({
+			this.getImageEl().css({
 				'background-position' : 'center',
 				'background-repeat' : 'no-repeat',
 				'background-size' : 'cover'
 			});
+		},
+
+
+		/**
+		 * Retrieve the element that has the image as the background.
+		 *
+		 * @method getImageEl
+		 * @return {jQuery}
+		 */
+		getImageEl : function() {
+			return this.$fillmoreEl;
 		},
 
 
@@ -133,7 +225,7 @@
 		 * @param {String} src The src for the image to show.
 		 */
 		setImageSrc : function( src ){
-			this.$containerEl.css({
+			this.getImageEl().css({
 				'background-image' : "url('" + src + "')"
 			});
 		},
@@ -145,7 +237,7 @@
 		 * @method destroy
 		 */
 		destroy : function() {
-			this.$containerEl.css({
+			this.getImageEl().css({
 				'background-image' : '',
 				'background-position' : '',
 				'background-repeat' : '',
@@ -161,23 +253,6 @@
 	};
 	
 	$.extend( FillmoreOldBrowser.prototype, Fillmore.prototype, {
-		
-		/**
-		 * The configured settings (options) for the instance. This is initialized
-		 * to just the default settings, and is updated via the {@link #updateSettings} method.
-		 * 
-		 * @private
-		 * @property settings
-		 * @type Object
-		 */
-		
-		/**
-		 * The container element that is having a fillmore'd image applied to it.
-		 * 
-		 * @private
-		 * @property $containerEl
-		 * @type jQuery
-		 */
 		
 		/**
 		 * The element to use to size the fillmore'd element. This is in most cases the {@link #$containerEl} itself, but
@@ -228,14 +303,6 @@
 		containerZIndexModified : false,
 		
 		/**
-		 * The element which will hold the fillmore'd image.
-		 * 
-		 * @private
-		 * @property $fillmoreEl
-		 * @type jQuery
-		 */
-		
-		/**
 		 * Flag to determine if the image itself is currently loaded. This flag is reset back to false
 		 * when a new image is loaded.
 		 * 
@@ -259,53 +326,35 @@
 		
 
 		/**
-		 * Initializes the special Fillmore element, which is nested inside the containerEl and acts as
-		 * the parent of the image.  This is only needed in browsers where background-size:cover isn't
-		 * supported.
+		 * Initializes the special containerSizing element, which is referenced
+		 * to accurately compute the container dimensions.
 		 *
 		 * @method init
+		 * @property {HTMLElement/jquery} containerEl The container element where a fillmore'd image should be placed.
 		 */
 		init : function( containerEl ) {
 			Fillmore.prototype.init.apply( this, arguments );
 
-
-			var fillmoreElPosition = 'absolute',  // will be set to fixed if using the body element as the container element
-				$containerEl = this.$containerEl;
-
-			// Make sure the container element has a transparent background, so we can see the stretched image
-			$containerEl.css( 'background', 'transparent' );
-			
-			if( $containerEl.is( 'body' ) ) {
+			if( this.$containerEl.is( 'body' ) ) {
 				this.$containerSizingEl = ( 'onorientationchange' in window ) ? $( document ) : $( window ); // hack to acccount for iOS position:fixed shortcomings
-				fillmoreElPosition = 'fixed';
-				
 			} else {
-				// Make sure we cut the image off at the end of the container element
-				this.originalContainerOverflow = $containerEl[ 0 ].style.overflow;
-				$containerEl.css( 'overflow', 'hidden' );
-				
-				// Make sure the container element has a positioning context, so we can position the $fillmoreEl inside it. Must be absolute/relative/fixed.
-				// It doesn't need a positioning context if the element is the document body however, as that already has a positioning context.
-				if( $containerEl.css( 'position' ) === 'static' ) {  // computed style is 'static', i.e. no positioning context
-					$containerEl.css( 'position', 'relative' );
-					this.containerPositionModified = true;
-				}
-				
-				// If the element doesn't have a z-index value, we need to give it one to create a stacking context.
-				if( $containerEl.css( 'z-index' ) === 'auto' ) {
-					$containerEl.css( 'z-index', 0 );
-					this.containerZIndexModified = true;  // Flag to tell the destroy() method that we modified the zIndex style, to reset it
-				}
+				this.$containerSizingEl = this.$containerEl;
 			}
-			
-			
-			// The div element that will be placed inside the container, with the image placed inside of it
-			this.$fillmoreEl = $( '<div style="left: 0; top: 0; position: ' + fillmoreElPosition + '; overflow: hidden; z-index: -999999; margin: 0; padding: 0; height: 100%; width: 100%;" />' )
-				.appendTo( $containerEl );
 			
 			// Add a handler to adjust the background size when the window is resized or orientation has changed (iOS)
 			this.resizeProxy = $.proxy( this.resize, this );  // need to store a reference to this function, so we can remove the listener in destroy()
 			$( window ).resize( this.resizeProxy );
+		},
+
+
+		/**
+		 * Retrieve the img element.
+		 *
+		 * @method getImageEl
+		 * @return {jQuery}
+		 */
+		getImageEl : function() {
+			return this.$imgEl;
 		},
 
 
@@ -343,28 +392,29 @@
 		 */
 		onImageLoaded : function( evt, callback ) {
 			var img = evt.target,
-				$fillmoreEl = this.$fillmoreEl;
+				$fillmoreEl = this.$fillmoreEl,
+				$imageEl = this.getImageEl();
 			
 			// If the image that has loaded is not the current image (the latest image), simply return out. 
 			// We will "throw away" this image, as a new one is currently loading. This fixes a weird issue
 			// where the fadeIn() method's callback will continually be called if a new image is requested
 			// while one or more old ones are still loading.
-			if( img !== this.$imgEl[ 0 ] ) {
+			if( img !== $imageEl[ 0 ] ) {
 				return;
 			}
 			
 			this.imgLoaded = true;
 			
-			this.$imgEl.css( { width: "auto", height: "auto" } );
+			$imageEl.css( { width: "auto", height: "auto" } );
 			
-			var imgWidth = img.width || this.$imgEl.width(),
-				imgHeight = img.height || this.$imgEl.height();
+			var imgWidth = img.width || $imageEl.width(),
+				imgHeight = img.height || $imageEl.height();
 			
 			// Store the image ratio, and resize
 			this.imgRatio = imgWidth / imgHeight;
 			this.resize();
 			
-			this.$imgEl.fadeIn( this.settings.speed, jQuery.proxy( function() {
+			$imageEl.fadeIn( this.settings.speed, jQuery.proxy( function() {
 				// Remove the old images (if any exist), and remove them
 				$fillmoreEl.find( 'img.deletable' ).remove();
 				
