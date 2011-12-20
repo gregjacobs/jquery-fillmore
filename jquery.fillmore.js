@@ -64,6 +64,15 @@
 		 */
 
 		/**
+		 * CSS position for the fillmoreEl.
+		 * 
+		 * @private
+		 * @property fillmoreElPosition
+		 * @type String
+		 */
+		fillmoreElPosition : 'absolute',
+
+		/**
 		 * Flag to determine if the image is fully loaded, <b>and</b> has been faded in.
 		 * 
 		 * @private
@@ -71,6 +80,15 @@
 		 * @type Boolean
 		 */
 		loaded : false,
+
+		/**
+		 * DOM elements to be deleted once the image has faded in.
+		 * 
+		 * @private
+		 * @property $deletable
+		 * @type jQuery
+		 */
+		$deletable : $(),
 		
 		
 		/**
@@ -84,14 +102,13 @@
 			// Start with the default settings (need a copy)
 			this.settings = $.extend( {}, defaultSettings );
 			
-			var fillmoreElPosition = 'absolute',  // will be set to fixed if using the body element as the container element
-				$containerEl = this.$containerEl = $( containerEl );
+			var $containerEl = this.$containerEl = $( containerEl );
 
 			// Make sure the container element has a transparent background, so we can see the stretched image
 			$containerEl.css( 'background', 'transparent' );
 			
 			if( $containerEl.is( 'body' ) ) {
-				fillmoreElPosition = 'fixed';
+				this.fillmoreElPosition = 'fixed';
 				
 			} else {
 				// Make sure we cut the image off at the end of the container element
@@ -113,9 +130,20 @@
 			}
 			
 			
+			this.createFillmoreEl();
+		},
+
+
+		/**
+		 * Creates the fillmoreEl, which acts as the outer container of the image.
+		 *
+		 * @method getImageEl
+		 * @return {jQuery}
+		 */
+		createFillmoreEl : function() {
 			// The div element that will be placed inside the container, with the image placed inside of it
-			this.$fillmoreEl = $( '<div style="left: 0; top: 0; position: ' + fillmoreElPosition + '; overflow: hidden; z-index: -999999; margin: 0; padding: 0; height: 100%; width: 100%;" />' )
-				.appendTo( $containerEl );
+			this.$fillmoreEl = $( '<div style="left: 0; top: 0; position: ' + this.fillmoreElPosition + '; overflow: hidden; z-index: -999999; margin: 0; padding: 0; height: 100%; width: 100%;" />' )
+				.appendTo( this.$containerEl );
 		},
 
 		
@@ -142,14 +170,15 @@
 
 
 		/**
-		 * Abstract method to initialize the Fillmore plugin on an element.
+		 * Method to initialize the Fillmore plugin on an element.
 		 *
 		 * @method showImage
 		 * @param {String} src The src for the image to show.
 		 * @param {Function} callback (optional) A callback to call when the image has loaded and faded in.
 		 */
 		showImage : function( src, callback ) {
-			throw "abstract method: showImage() must be implemented by subclasses";
+			// Mark any old image(s) for removal. They will be removed when the new image loads.
+			this.$deletable = this.getImageEl();
 		},
 
 
@@ -179,6 +208,10 @@
 		 */
 		onImageVisible : function( callback ) {
 			this.loaded = true;
+
+			// Remove the old images (if any exist)
+			this.$deletable.remove();
+			this.$deletable = $();
 			
 			if( typeof callback === "function" ) {
 				callback();
@@ -227,23 +260,6 @@
 	$.extend( FillmoreCss3.prototype, Fillmore.prototype, {
 
 		/**
-		 * Adds properties to the fillmoreEl needed for background-sizing.
-		 *
-		 * @method init
-		 * @property {HTMLElement/jquery} containerEl The container element where a fillmore'd image should be placed.
-		 */
-		init : function( containerEl ){
-			Fillmore.prototype.init.apply( this, arguments );
-
-			this.getImageEl().css({
-				'background-position' : 'center',
-				'background-repeat' : 'no-repeat',
-				'background-size' : 'cover'
-			});
-		},
-
-
-		/**
 		 * Retrieve the element that has the image as the background.
 		 *
 		 * @method getImageEl
@@ -255,6 +271,23 @@
 
 
 		/**
+		 * Creates the fillmoreEl, which acts as the outer container of the image.
+		 *
+		 * @method getImageEl
+		 * @return {jQuery}
+		 */
+		createFillmoreEl : function() {
+			Fillmore.prototype.createFillmoreEl.apply( this, arguments );
+			
+			this.getImageEl().css({
+				'background-position' : 'center',
+				'background-repeat' : 'no-repeat',
+				'background-size' : 'cover'
+			});
+		},
+
+
+		/**
 		 * Initializes the Fillmore plugin on an element.
 		 *
 		 * @method showImage
@@ -262,6 +295,10 @@
 		 * @param {Function} callback (optional) A callback to call when the image has loaded and faded in.
 		 */
 		showImage : function( src, callback ) {
+			Fillmore.prototype.showImage.apply( this, arguments );
+
+			this.createFillmoreEl();
+
 			// create an Image object so we can execute the callback after the 'load' event
 			var img = new Image(),
 				self = this;
@@ -403,8 +440,7 @@
 		 * @param {Function} callback (optional) A callback to call when the image has loaded and faded in.
 		 */
 		showImage : function( src, callback ) {
-			// Mark any old image(s) for removal. They will be removed when the new image loads.
-			this.$fillmoreEl.find( 'img' ).addClass( 'deletable' );
+			Fillmore.prototype.showImage.apply( this, arguments );
 			
 			// Reset flags since we're showing a new image
 			this.imgLoaded = false;
@@ -451,21 +487,6 @@
 			// Store the image ratio, and resize
 			this.imgRatio = imgWidth / imgHeight;
 			this.resize();
-		},
-
-
-		/**
-		 * Method that is called when the image becomes fully visible.
-		 *
-		 * @private
-		 * @method onImageVisible
-		 * @param {Function} callback (optional) A callback to call when the image has loaded and faded in.
-		 */
-		onImageVisible : function( callback ) {
-			Fillmore.prototype.onImageVisible.apply( this, arguments );
-
-			// Remove the old images (if any exist), and remove them
-			this.$fillmoreEl.find( 'img.deletable' ).remove();
 		},
 		
 		
