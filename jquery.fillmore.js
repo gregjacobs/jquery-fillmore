@@ -150,7 +150,7 @@
 		 * Updates the settings of the instance with any new settings supplied.
 		 *
 		 * @method updateSettings
-		 * @property {Object} settings An object (hash) of settings. Current options include: 'centeredX' (Boolean), 'centeredY' (Boolean), and 'speed' (Int).  
+		 * @property {Object} settings An object (hash) of settings. Current options include: 'focusX' (Number), 'focusY' (Number) and 'speed' (Int).  'centeredX' (Boolean) and 'centeredY' (Boolean) are deprecated.
 		 */
 		updateSettings : function( settings ) {
 			this.settings = $.extend( this.settings, settings );

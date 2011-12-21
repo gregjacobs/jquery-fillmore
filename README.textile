@@ -70,11 +70,19 @@ h3. src
 
 Required. The src of the image to load. (type=String)
 
-h3. centeredX
+h3. focusX
+
+The percentage from the left edge of the photo to keep fixed within the element, relative to its position in the original photo.  Uses (or mimics) the CSS background-position percentage values - see "the spec":http://www.w3.org/TR/css3-background/#background-position for more info. (type=Number, default=50)
+
+h3. focusY
+
+Focus percentage from top - see focusX for more info. (type=Number, default=50)
+
+h3. centeredX (deprecated)
 
 The ratio of the width/height of the image doesn't always jive with the width/height of the window. This parameter controls whether or not we center the image on the X axis to account for the discrepancy. (type=Boolean, default=true)
 
-h3. centeredY
+h3. centeredY (deprecated)
 
 This parameter controls whether or not we center the image on the Y axis to account for the aforementioned discrepancy. (type=Boolean, default=true)
 
