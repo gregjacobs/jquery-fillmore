@@ -653,7 +653,7 @@
 	
 	// Static jQuery method, to maintain the old behavior of automatically attaching the image to the full page.
 	$.fillmore = function( settings ) {
-		return $( 'html' ).css( 'min-height', '100%' ).fillmore( settings );
+		return $( 'body' ).fillmore( settings );
 	};
   
 })(jQuery);

@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<style>
+		body { font-family: Helvetica, Arial, sans-serif; }
+		.container {
+			width: 90%;
+			margin: 20px auto;
+			background-color: #FFF;
+			padding: 20px;
+		}
+		pre { border: 1px solid #CCC; background-color: #EEE; color: #333; padding: 10px; }
+		.column {
+			width: 33%;
+			float: left;
+		}
+		.column * {
+			text-align: center;
+			margin: auto;
+		}
+		.clear { clear: both; }
+		h2 {
+			font-size: 1.1em;
+		}
+		#original {
+			display: block;
+			width: 200px;
+		}
+		.fillmored {
+			border: 1px solid red;
+		}
+		.fillmored.vertical {
+			width: 100px;
+			height: 200px;
+		}
+		.fillmored.horizontal {
+			width: 200px;
+			height: 100px;
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<h1>Centering Demo</h1>
+		<p>This demo shows how to use jQuery Fillmore to specifify the desired center of a photo.</p>
+
+		<div class="column">
+			<h2>Original Image (Scaled Down)</h2>
+		</div>
+		<div class="column">
+			<h2>Vertical Without Centering</h2>
+		</div>
+		<div class="column">
+			<h2>Horizontal Without Centering</h2>
+		</div>
+		<div class="clear"></div>
+		<div class="column">
+			<img id="original" src="mother.jpg"/>
+		</div>
+		<div class="column">
+			<div class="fillmored vertical normal"></div>
+		</div>
+		<div class="column">
+			<div class="fillmored horizontal normal"></div>
+		</div>
+		<div class="clear"></div>
+
+		<div class="column">
+			<h2>Vertical With Centering</h2>
+		</div>
+		<div class="column">
+			<h2>Horizontal With Centering</h2>
+		</div>
+		<div class="clear"></div>
+		<div class="column">
+			<div class="fillmored vertical center"></div>
+		</div>
+		<div class="column">
+			<div class="fillmored horizontal center"></div>
+		</div>
+		<div class="clear"></div>
+
+		<pre><code>
+&lt;script src=&quot;../lib/jquery-1.7.1.min.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;../jquery.fillmore.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+	$('.fillmored.center').fillmore( {
+		src: &quot;pot-holder.jpg&quot;
+		centerX: 75,  // a number between 1 and 100, starting from left
+		centerY: 16   // ditto, starting from top
+	} );
+&lt;/script&gt;
+		</code></pre>
+	</div>
+	<script src="../lib/jquery-1.7.1.min.js"></script>
+	<script src="../jquery.fillmore.js"></script>
+	<script>
+		$.fillmore( { src: "pot-holder.jpg" } );
+		$('.fillmored.normal').fillmore( { src: "mother.jpg" } );
+		$('.fillmored.center').fillmore( {
+			src: "mother.jpg",
+			centerX: 75,
+			centerY: 16
+		} );
+	</script>
+</body>
+</html>
