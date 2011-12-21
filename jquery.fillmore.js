@@ -14,8 +14,8 @@
 	
 	var defaultSettings = {
 		src       : null, // The src for the image
-		centeredX : true, // Should we center the image on the X axis?
-		centeredY : true, // Should we center the image on the Y axis?
+		focusX    : 50,   // Focus position from left - Number between 1 and 100
+		focusY    : 50,   // Focus position from top - Number between 1 and 100
 		speed     : 0     // fadeIn speed for background after image loads (e.g. "fast" or 500)
 	};
 	
@@ -88,7 +88,6 @@
 		 * @property $deletable
 		 * @type jQuery
 		 */
-		$deletable : $(),
 		
 		
 		/**
@@ -155,6 +154,13 @@
 		 */
 		updateSettings : function( settings ) {
 			this.settings = $.extend( this.settings, settings );
+
+			if( settings.centeredX ){
+				this.settings.focusX = 50;
+			}
+			if( settings.centeredY ){
+				this.settings.focusY = 50;
+			}
 		},
 
 
@@ -210,8 +216,10 @@
 			this.loaded = true;
 
 			// Remove the old images (if any exist)
-			this.$deletable.remove();
-			this.$deletable = $();
+			if( this.$deletable ) {
+				this.$deletable.remove();
+				this.$deletable = null;
+			}
 			
 			if( typeof callback === "function" ) {
 				callback();
@@ -278,9 +286,9 @@
 		 */
 		createFillmoreEl : function() {
 			Fillmore.prototype.createFillmoreEl.apply( this, arguments );
-			
+
 			this.getImageEl().css({
-				'background-position' : 'center',
+				'background-position' : this.settings.focusX + '% ' + this.settings.focusY + '%',
 				'background-repeat' : 'no-repeat',
 				'background-size' : 'cover'
 			});
@@ -506,24 +514,19 @@
 						
 						bgCSS = { left: 0, top: 0 },
 						bgWidth = containerWidth,
-						bgHeight = bgWidth / this.imgRatio,
-						bgOffset;
+						bgHeight = bgWidth / this.imgRatio;
 					
 					
 					// Make adjustments based on image ratio
-					// Note: Offset code provided by Peter Baker (http://ptrbkr.com/). Thanks, Peter!
+					// Note: Offset code inspired by Peter Baker (http://ptrbkr.com/). Thanks, Peter!
 					if( bgHeight >= containerHeight ) {
-						bgOffset = ( bgHeight - containerHeight ) / 2;
-						if( settings.centeredY ) {
-							$.extend( bgCSS, { top: "-" + bgOffset + "px" } );
-						}
+						var topOffset = ( bgHeight - containerHeight ) * this.settings.focusY / 100;
+						$.extend( bgCSS, { top: "-" + topOffset + "px" } );
 					} else {
 						bgHeight = containerHeight;
 						bgWidth = bgHeight * this.imgRatio;
-						bgOffset = ( bgWidth - containerWidth ) / 2;
-						if( settings.centeredX ) {
-							$.extend( bgCSS, { left: "-" + bgOffset + "px" } );
-						}
+						var leftOffset = ( bgWidth - containerWidth ) * this.settings.focusX / 100;
+						$.extend( bgCSS, { left: "-" + leftOffset + "px" } );
 					}
 					
 					// Update the elements

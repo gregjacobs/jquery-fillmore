@@ -42,17 +42,17 @@
 </head>
 <body>
 	<div class="container">
-		<h1>Centering Demo</h1>
-		<p>This demo shows how to use jQuery Fillmore to specifify the desired center of a photo.</p>
+		<h1>Focusing Demo</h1>
+		<p>This demo shows how to use jQuery Fillmore to specifify the desired focus of a photo.</p>
 
 		<div class="column">
 			<h2>Original Image (Scaled Down)</h2>
 		</div>
 		<div class="column">
-			<h2>Vertical Without Centering</h2>
+			<h2>Vertical Without Focusing</h2>
 		</div>
 		<div class="column">
-			<h2>Horizontal Without Centering</h2>
+			<h2>Horizontal Without Focusing</h2>
 		</div>
 		<div class="clear"></div>
 		<div class="column">
@@ -67,17 +67,17 @@
 		<div class="clear"></div>
 
 		<div class="column">
-			<h2>Vertical With Centering</h2>
+			<h2>Vertical With Focusing</h2>
 		</div>
 		<div class="column">
-			<h2>Horizontal With Centering</h2>
+			<h2>Horizontal With Focusing</h2>
 		</div>
 		<div class="clear"></div>
 		<div class="column">
-			<div class="fillmored vertical center"></div>
+			<div class="fillmored vertical focus"></div>
 		</div>
 		<div class="column">
-			<div class="fillmored horizontal center"></div>
+			<div class="fillmored horizontal focus"></div>
 		</div>
 		<div class="clear"></div>
 
@@ -85,10 +85,10 @@
 &lt;script src=&quot;../lib/jquery-1.7.1.min.js&quot;&gt;&lt;/script&gt;
 &lt;script src=&quot;../jquery.fillmore.js&quot;&gt;&lt;/script&gt;
 &lt;script&gt;
-	$('.fillmored.center').fillmore( {
+	$('.fillmored.focus').fillmore( {
 		src: &quot;pot-holder.jpg&quot;
-		centerX: 75,  // a number between 1 and 100, starting from left
-		centerY: 16   // ditto, starting from top
+		focusX: 75,  // a number between 1 and 100, starting from left
+		focusY: 16   // ditto, starting from top
 	} );
 &lt;/script&gt;
 		</code></pre>
@@ -98,10 +98,10 @@
 	<script>
 		$.fillmore( { src: "pot-holder.jpg" } );
 		$('.fillmored.normal').fillmore( { src: "mother.jpg" } );
-		$('.fillmored.center').fillmore( {
+		$('.fillmored.focus').fillmore( {
 			src: "mother.jpg",
-			centerX: 75,
-			centerY: 16
+			focusX: 75,
+			focusY: 16
 		} );
 	</script>
 </body>
