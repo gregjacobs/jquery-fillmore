@@ -228,6 +228,15 @@
 
 
 		/**
+		 * Resizes the background image to the proper size, and fixes its position based on the container size.
+		 * Defaults to a no-op, but it should be overwritten by subclasses if action is needed.
+		 * 
+		 * @method resize
+		 */
+		resize : function() {},
+
+
+		/**
 		 * Determines if the image is currently loaded, and has been faded in.
 		 * 
 		 * @method isLoaded
