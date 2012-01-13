@@ -320,14 +320,15 @@
 			var img = new Image(),
 				self = this;
 			
-			img.src = src;
-			img.onload = $.proxy( function( e ){
+			img.onload = img.onerror = $.proxy( function( e ) {
 				this.getImageEl().css({
 					'background-image' : "url('" + src + "')"
 				});
 
 				this.onImageLoaded( e, callback, src );
 			}, this );
+			
+			img.src = src;
 		},
 
 
