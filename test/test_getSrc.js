@@ -1,4 +1,4 @@
-/*global module, test, strictEqual*/
+/*global $, module, test, strictEqual */
 (function() {
 
 	module( "getSrc", {

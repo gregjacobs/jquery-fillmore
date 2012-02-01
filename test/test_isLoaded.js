@@ -1,4 +1,4 @@
-/*global module, test, asyncTest, start, strictEqual*/
+/*global $, module, test, asyncTest, start, strictEqual */
 (function() {
 
 	module( "isLoaded", {
@@ -38,27 +38,6 @@
 				
 				strictEqual( $fixture.fillmore( 'isLoaded' ), true );
 			} 
-		} );
-	} );
-	
-	
-	asyncTest( "should return false after the image has loaded, but has not yet faded in", 1, function() {
-		var $fixture = $( '#qunit-fixture' );
-		
-		$fixture.fillmore( { 
-			src : '../examples/coffee.jpg',
-			speed : 500   // make it fade for half a second
-		} );
-		
-		// Access private member of the Fillmore object to determine when the image has loaded.
-		// This callback should be run before the image has faded in, resulting in isLoaded() returning false.
-		$fixture.data( 'fillmore' ).$imgEl.bind( {
-			'load' : function() {
-				// restart the test
-				start();
-				
-				strictEqual( $fixture.fillmore( 'isLoaded' ), false );  // image hasn't been faded in yet, should return false
-			}
 		} );
 	} );
 	
