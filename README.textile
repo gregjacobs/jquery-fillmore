@@ -86,6 +86,10 @@ h3. callback
 
 A function to run when the new image has been loaded and faded in. (type=Function, default=undefined)
 
+h3. noCss3
+
+Set to true to make the plugin *not* use CSS3 background-size:cover, if available. This can be used if you find a situation where the background-size:cover is not working correctly, and you need to fall back to the regular image stretching implementation. (If you find one of these situations though, let me know by creating a github issue!) (type=Boolean, default=false)
+
 
 
 h2. Examples

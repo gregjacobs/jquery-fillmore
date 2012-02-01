@@ -686,7 +686,7 @@
 				
 				// Create an instance on the element if there is none yet
 				if( !fillmore ) {
-					if ( $.Fillmore.useCss3 ) {
+					if ( $.Fillmore.useCss3 && !settings.noCss3 ) {
 						fillmore = new $.FillmoreCss3( el );
 					} else {
 						fillmore = new $.FillmoreImageStretch( el );	
