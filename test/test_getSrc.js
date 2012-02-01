@@ -44,7 +44,6 @@
 		var $fixture = $( '#qunit-fixture' );
 		for( var i = 1; i <= 3; i++ ) {
 			$( '<div>' ).appendTo( $fixture ).fillmore( { src : 'img' + i + '.jpg' } );
-			
 		}
 		
 		strictEqual( $fixture.find( 'div' ).fillmore( 'getSrc' ), 'img1.jpg' );

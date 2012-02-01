@@ -14,38 +14,67 @@
 	 * @param {HTMLElement/jquery} containerEl The container element where a fillmore'd image should be placed.
 	 */
 	$.FillmoreCss3 = function( containerEl ) {
-		this.init( containerEl );
+		$.Fillmore.apply( this, arguments );
 	};
 	
 	
 	$.extend( $.FillmoreCss3.prototype, $.Fillmore.prototype, {
 		
 		/**
-		 * Retrieve the element that has the image as the background.
-		 *
-		 * @method getImageEl
-		 * @return {jQuery}
+		 * @private
+		 * @property {jQuery} $imgEl
+		 * 
+		 * Will store the current image that is displayed when {@link #showImage} is called.
 		 */
-		getImageEl : function() {
-			return this.$fillmoreEl;
-		},
+		$imgEl : null,
+		
+		
+		// ---------------------------
 		
 		
 		/**
-		 * Creates the fillmoreEl, which acts as the outer container of the image.
+		 * Extension of {@link $.Fillmore#createFillmoreEl createFillmoreEl} from the superclass, to 
+		 * apply the necessary CSS properties needed for the CSS3 implementation.
 		 *
-		 * @method getImageEl
+		 * @protected
+		 * @method createFillmoreEl
 		 * @return {jQuery}
 		 */
 		createFillmoreEl : function() {
 			$.Fillmore.prototype.createFillmoreEl.apply( this, arguments );
 	
-			this.getImageEl().css( {
-				'background-position' : this.settings.focusX + '% ' + this.settings.focusY + '%',
+			this.$fillmoreEl.css( {
 				'background-repeat' : 'no-repeat',
 				'background-size' : 'cover'
 			} );
-		},	
+		},
+		
+		
+		/**
+		 * Extension of {@link $.Fillmore#updateSettings}, to update the {@link #$fillmoreEl} with any
+		 * new focusX and focusY settings.
+		 *
+		 * @method updateSettings
+		 * @property {Object} settings An object (hash) of settings. See the readme file for settings.
+		 */
+		updateSettings : function( settings ) {
+			$.Fillmore.prototype.updateSettings.apply( this, arguments );
+			
+			// Update the $fillmoreEl for any focusX/focusY changes
+			this.$fillmoreEl.css( 'background-position', this.settings.focusX + '% ' + this.settings.focusY + '%' );
+		},
+		
+		
+		/**
+		 * Retrieve the img element, or null if it has not been created yet.
+		 *
+		 * @protected
+		 * @method getImageEl
+		 * @return {jQuery}
+		 */
+		getImageEl : function() {
+			return this.$imgEl || null;
+		},
 	
 	
 		/**
@@ -58,47 +87,37 @@
 	
 	
 		/**
-		 * Initializes the Fillmore plugin on an element.
+		 * Loads the image, and then calls the {@link #onImageLoad} callback.
 		 *
-		 * @method showImage
+		 * @method loadImage
 		 * @param {String} src The src for the image to show.
-		 * @param {Function} callback (optional) A callback to call when the image has loaded and faded in.
 		 */
-		showImage : function( src, callback ) {
-			$.Fillmore.prototype.showImage.apply( this, arguments );
-	
-			this.createFillmoreEl();
-	
-			// create an Image object so we can execute the callback after the 'load' event
-			var img = new Image(),
-				self = this;
-			
-			img.onload = img.onerror = $.proxy( function( e ) {
-				this.getImageEl().css( {
-					'background-image' : "url('" + src + "')"
-				} );
-	
-				this.onImageLoaded( e, callback, src );
-			}, this );
-			
-			img.src = src;
+		loadImage : function( src ) {
+			// Create a new image element, so we can execute the callback after the 'load' event.
+			// This is used to preload the image, before applying it to the background of the $fillmore element,
+			// and then calling the callback
+			this.$imgEl = $( '<img />' )
+				.bind( 'load error', $.proxy( this.onImageLoad, this ) );
+							
+			this.$imgEl.attr( "src", src ); // Hack for IE img onload event
 		},
-	
-	
+		
+		
 		/**
-		 * Removes the background image properties from the selected elements.
+		 * Method that is called when the image is loaded, to apply the image to the background
+		 * of the {@link #$fillmoreEl}.
 		 *
-		 * @method destroy
+		 * @protected
+		 * @method onImageLoad
+		 * @param {jQuery.Event} evt
 		 */
-		destroy : function() {
-			this.getImageEl().css( {
-				'background-image' : '',
-				'background-position' : '',
-				'background-repeat' : '',
-				'background-size' : ''
-			} );
+		onImageLoad : function( evt ) {
+			var src = this.$imgEl[ 0 ].src;
+			this.$fillmoreEl.css( 'background-image', "url('" + src + "')" );
+			
+			$.Fillmore.prototype.onImageLoad.apply( this, arguments );
 		}
-	
+		
 	} );
 	
 })( jQuery );

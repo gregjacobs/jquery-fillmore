@@ -42,7 +42,10 @@
 		focusX   : 50,   // Focus position from left - Number between 1 and 100
 		focusY   : 50,   // Focus position from top - Number between 1 and 100
 		speed    : 0,    // fadeIn speed for background after image loads (e.g. "fast" or 500)
-		callback : undefined
+		
+		onImageLoad    : undefined,
+		onImageVisible : undefined,
+		callback       : undefined
 	};
 	
 	
@@ -101,23 +104,35 @@
 	
 		/**
 		 * @protected
-		 * @property {Boolean} loaded
+		 * @property {Boolean} imageLoaded
 		 * 
-		 * Flag to determine if the image is fully loaded, <b>and</b> has been faded in.
+		 * Flag to determine if the image is fully loaded.
 		 */
-		loaded : false,
+		imageLoaded : false,
 	
 		/**
 		 * @protected
-		 * @property {jQuery} $deletable
+		 * @property {Boolean} imageVisible
 		 * 
-		 * DOM elements to be deleted once the image has faded in.
+		 * Flag to determine if the image is fully loaded, **and** has been faded in.
 		 */
+		imageVisible : false,
 		
 		
 		/**
 		 * Initializes the special Fillmore element, which is nested inside the containerEl and acts as
 		 * the container of the image.
+		 * 
+		 * This method modifies certain CSS properties of the container element if it needs to. This includes:
+		 * 
+		 * - `position` : to give the container element a positioning context if it doesn't have one
+		 * - `z-index` : to give the container element a stacking context if it doesn't have one
+		 * - `background` : to make the background of the container element transparent, if it's not already.
+		 * 
+		 * Note that the above properties are applied for both the CSS3 and ImageStretch implementations, even though
+		 * the CSS3 implementation doesn't need the `position` and `z-index` to be set. It is done this way so that you
+		 * expect it and can work around it if need be, because users that are using older browsers will need those properties 
+		 * applied (although it is unlikely that you will need to do anything in most cases).
 		 *
 		 * @method init
 		 * @property {HTMLElement/jquery} containerEl The container element where a fillmore'd image should be placed.
@@ -156,12 +171,13 @@
 			
 			this.createFillmoreEl();
 		},
-	
-	
+		
+		
 		/**
 		 * Creates the fillmoreEl, which acts as the outer container of the image.
 		 *
-		 * @method getImageEl
+		 * @protected
+		 * @method createFillmoreEl
 		 * @return {jQuery}
 		 */
 		createFillmoreEl : function() {
@@ -169,23 +185,16 @@
 			this.$fillmoreEl = $( '<div style="left: 0; top: 0; position: ' + this.fillmoreElPosition + '; overflow: hidden; z-index: -999999; margin: 0; padding: 0; height: 100%; width: 100%;" />' )
 				.appendTo( this.$containerEl );
 		},
-	
+		
 		
 		/**
 		 * Updates the settings of the instance with any new settings supplied.
 		 *
 		 * @method updateSettings
-		 * @property {Object} settings An object (hash) of settings. Current options include: 'focusX' (Number), 'focusY' (Number) and 'speed' (Int).  'centeredX' (Boolean) and 'centeredY' (Boolean) are deprecated.
+		 * @property {Object} settings An object (hash) of settings. See the readme file for settings.
 		 */
 		updateSettings : function( settings ) {
 			this.settings = $.extend( this.settings, settings );
-	
-			if( settings.centeredX ) {
-				this.settings.focusX = 50;
-			}
-			if( settings.centeredY ) {
-				this.settings.focusY = 50;
-			}
 		},
 	
 	
@@ -193,23 +202,25 @@
 		 * Abstract method to retrieve the element that has the image attached.
 		 *
 		 * @abstract
+		 * @protected
 		 * @method getImageEl
-		 * @return {jQuery}
+		 * @return {jQuery} The image element, wrapped in a jQuery object (wrapped set)
 		 */
 		getImageEl : function() {
-			throw new Error( "getImageEl() must be implemented by subclass" );
+			throw new Error( "getImageEl() must be implemented in subclass" );
 		},
 	
 		
 		/**
 		 * Retrieves the size of the loaded image, once it has loaded. If this method is called
-		 * before the image has loaded, the sizes will be returned as undefined.
+		 * before the image has loaded, the method will return null.
 		 * 
 		 * @method getImageSize
-		 * @return {Object} An object (hashmap) with properties `width` and `height`.
+		 * @return {Object} An object (hashmap) with properties `width` and `height`, or null if the
+		 *   image is not yet loaded.
 		 */
 		getImageSize : function() {
-			if( this.loaded ) {
+			if( this.imageLoaded ) {
 				var imageEl = this.getImageEl()[ 0 ];
 				return {
 					width: imageEl.width,
@@ -217,7 +228,7 @@
 				};
 				
 			} else {
-				return { width: undefined, height: undefined }
+				return null;
 			}
 		},
 	
@@ -227,28 +238,49 @@
 		 *
 		 * @method showImage
 		 * @param {String} src The src for the image to show.
-		 * @param {Function} callback (optional) A callback to call when the image has loaded and faded in.
 		 */
-		showImage : function( src, callback ) {
-			// Mark any old image(s) for removal. They will be removed when the new image loads.
-			this.$deletable = this.getImageEl();
+		showImage : function( src ) {
+			this.imageLoaded = false;
+			this.imageVisible = false;
+			
+			// Call hook method for subclasses
+			this.loadImage( src );
 		},
 		
-	
+		
+		/**
+		 * Implementation-specific image loading method, which must be implemented in a subclass.
+		 * This method should load the image how it wants, and then call the {@link #onImageLoad}
+		 * method when the image has finished loading (or has failed to load). 
+		 * 
+		 * @abstract
+		 * @protected
+		 * @method loadImage
+		 */
+		loadImage : function() {
+			throw new Error( "loadImage() must be implemented in subclass" );
+		},
+		
+		
 		/**
 		 * Method that is called when the image is loaded.
 		 *
-		 * @private
-		 * @method onImageLoaded
+		 * @protected
+		 * @method onImageLoad
 		 * @param {jQuery.Event} evt
-		 * @param {Function} callback (optional) A callback to call when the image has loaded and faded in.
 		 */
-		onImageLoaded : function( evt, callback ) {
-			this.getImageEl()
+		onImageLoad : function( evt ) {
+			this.imageLoaded = true;
+			
+			// Call the onImageLoad callback, if there is one
+			var onImageLoad = this.settings.onImageLoad;
+			if( typeof onImageLoad === 'function' ) {
+				onImageLoad();
+			}
+			
+			this.$fillmoreEl
 				.hide()
-				.fadeIn( this.settings.speed, $.proxy( function(){
-					this.onImageVisible( callback );
-				}, this ) );
+				.fadeIn( this.settings.speed, $.proxy( this.onImageVisible, this ) );
 		},
 		
 		
@@ -258,18 +290,16 @@
 		 * @private
 		 * @method onImageVisible
 		 * @param {Function} callback (optional) A callback to call when the image has loaded and faded in.
+		 *   This is called before the {@link #settings} `onImageVisible` callback is called.
 		 */
 		onImageVisible : function( callback ) {
-			this.loaded = true;
-	
-			// Remove the old images (if any exist)
-			if( this.$deletable ) {
-				this.$deletable.remove();
-				this.$deletable = null;
-			}
+			this.imageVisible = true;
 			
-			if( typeof callback === "function" ) {
-				callback();
+			var settings = this.settings,
+			    onImageVisible = settings.onImageVisible || settings.callback;  // 'callback' is legacy
+			    
+			if( typeof onImageVisible === "function" ) {
+				onImageVisible();
 			}
 		},
 	
@@ -281,7 +311,7 @@
 		 * @method resize
 		 */
 		resize : function() {
-			throw new Error( "resize() must be implemented by subclass" );
+			throw new Error( "resize() must be implemented in subclass" );
 		},
 	
 	
@@ -292,7 +322,7 @@
 		 * @return {Boolean} True if the image is fully loaded and faded in. False otherwise.
 		 */
 		isLoaded : function() {
-			return this.loaded;
+			return this.imageVisible;
 		},
 		
 		
@@ -308,13 +338,25 @@
 	
 	
 		/**
-		 * Abstract method to remove the Fillmore from the selected elements.
+		 * Remove Fillmore from the target element.
 		 *
 		 * @abstract
 		 * @method destroy
 		 */
 		destroy : function() {
-			throw new Error( "destroy() must be implemented by subclass" );
+			// Restore the original position and z-index styles, if Fillmore modified them
+			if( this.containerPositionModified ) {				
+				this.$containerEl.css( 'position', '' );
+			}
+			if( this.containerZIndexModified ) {
+				this.$containerEl.css( 'z-index', '' );
+			}
+			
+			// Restore the original overflow style
+			this.$containerEl.css( 'overflow', this.originalContainerOverflow );
+			
+			// Remove the fillmore element. The child image element will be removed as well.
+			this.$fillmoreEl.remove();
 		}
 	
 	} );

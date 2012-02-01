@@ -82,9 +82,13 @@ h3. speed
 
 This is the speed at which the image will fade in, after downloading is complete. Integers are accepted, as well as standard jQuery speed strings (slow, normal, fast). (type=Integer, default=0)
 
-h3. callback
+h3. onImageLoad
 
-A function to run when the new image has been loaded and faded in. (type=Function, default=undefined)
+A function to run when the new image has been loaded (but not yet faded in). (type=Function, default=undefined)
+
+h3. onImageVisible / callback
+
+A function to run when the new image has been loaded and faded in. Either option name can be used (onImageVisible or callback). (type=Function, default=undefined)
 
 h3. noCss3
 
