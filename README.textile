@@ -78,14 +78,6 @@ h3. focusY
 
 Focus percentage from top - see focusX for more info. (type=Number, default=50)
 
-h3. centeredX (deprecated)
-
-The ratio of the width/height of the image doesn't always jive with the width/height of the window. This parameter controls whether or not we center the image on the X axis to account for the discrepancy. (type=Boolean, default=true)
-
-h3. centeredY (deprecated)
-
-This parameter controls whether or not we center the image on the Y axis to account for the aforementioned discrepancy. (type=Boolean, default=true)
-
 h3. speed
 
 This is the speed at which the image will fade in, after downloading is complete. Integers are accepted, as well as standard jQuery speed strings (slow, normal, fast). (type=Integer, default=0)
