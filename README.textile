@@ -97,6 +97,26 @@ Set to true to make the plugin *not* use CSS3 background-size:cover, if availabl
 
 
 
+h2. Methods
+
+h3. getSrc
+
+Retrieves the original src of the image used to Fillmore the element.
+
+h3. getImageSize
+
+Retrieves the size of the original image used. Returns an object with properties `width` and `height`, or returns null if the image is not yet loaded.
+
+h3. resize
+
+Recalculates the image size in the container. This method should be called if the container's size changes, to fix the position of the backstretched image (as Fillmore has no way of knowing if the container size has changed). However, this does not need to be called on window resize, as Fillmore does take care of that. This only needs to be called if you are dynamically modifying the container element's size.
+
+h3. destroy
+
+Removes Fillmore from the given element(s), and returns the element(s) to their original state.
+
+
+
 h2. Examples
 
 <pre><code><script type="text/javascript">
