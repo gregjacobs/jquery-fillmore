@@ -27,10 +27,29 @@
 			return this;
 		},
 		
+		// deprecated
 		isLoaded : function() {
 			var el = this[ 0 ], fillmore;
 			if( el && ( fillmore = $( el ).data( 'fillmore' ) ) ) {
 				return fillmore.isLoaded();
+			} else {
+				return false;  // element isn't fillmore'd, return false
+			}
+		},
+		
+		imageIsLoaded : function() {
+			var el = this[ 0 ], fillmore;
+			if( el && ( fillmore = $( el ).data( 'fillmore' ) ) ) {
+				return fillmore.imageIsLoaded();
+			} else {
+				return false;  // element isn't fillmore'd, return false
+			}
+		},
+		
+		imageIsVisible : function() {
+			var el = this[ 0 ], fillmore;
+			if( el && ( fillmore = $( el ).data( 'fillmore' ) ) ) {
+				return fillmore.imageIsVisible();
 			} else {
 				return false;  // element isn't fillmore'd, return false
 			}

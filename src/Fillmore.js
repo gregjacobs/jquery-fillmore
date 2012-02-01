@@ -316,12 +316,39 @@
 	
 	
 		/**
-		 * Determines if the image is currently loaded, and has been faded in.
+		 * Deprecated, use {@link #imageIsVisible} instead. This method is simply an alias to {@link #imageIsVisible}
+		 * at this time.
 		 * 
+		 * @deprecated 1.3 Replaced by {@link #imageIsVisible}.
 		 * @method isLoaded
 		 * @return {Boolean} True if the image is fully loaded and faded in. False otherwise.
 		 */
 		isLoaded : function() {
+			return this.imageIsVisible();
+		},
+		
+		
+		/**
+		 * Determines if the image is currently loaded. This relates to the last image that was
+		 * requested to be loaded. So if there is an old image loaded, and a new one is requested
+		 * by calling fillmore again but has not yet been downloaded by the browser, this will return
+		 * false until the new image comes in.
+		 * 
+		 * @method imageIsLoaded
+		 * @return {Boolean} True if the latest image requested is loaded, false otherwise.
+		 */
+		imageIsLoaded : function() {
+			return this.imageLoaded;
+		},
+		
+		
+		/**
+		 * Determines if the image is loaded, *and* visible (i.e. has been faded in).
+		 * 
+		 * @method imageIsVisible
+		 * @return {Boolean} True if the image is both loaded, *and* visible. False otherwise.
+		 */
+		imageIsVisible : function() {
 			return this.imageVisible;
 		},
 		

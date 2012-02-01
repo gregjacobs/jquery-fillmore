@@ -107,6 +107,14 @@ h3. getImageSize
 
 Retrieves the size of the original image used. Returns an object with properties `width` and `height`, or returns null if the image is not yet loaded.
 
+h3. imageIsLoaded
+
+Returns true if the latest image requested has been loaded. This will return true as soon as the image has loaded, before the image is visible (i.e. has been faded in).
+
+h3. imageIsVisible
+
+Returns true if the image is both loaded, and has been faded in.
+
 h3. resize
 
 Recalculates the image size in the container. This method should be called if the container's size changes, to fix the position of the backstretched image (as Fillmore has no way of knowing if the container size has changed). However, this does not need to be called on window resize, as Fillmore does take care of that. This only needs to be called if you are dynamically modifying the container element's size.
@@ -171,7 +179,7 @@ h3. Version 1.3
 * Reorganized CSS3 and ImageStretch subclasses to a more well-factored state.
 * Implemented getImageSize() method, to retrieve the original image size (can only be called after the image has loaded, however).
 * Implemented onImageLoad / onImageVisible callbacks.
-
+* Implemented imageIsLoaded() and imageIsVisible() methods.
 
 h3. Version 1.2
 
