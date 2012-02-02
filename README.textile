@@ -185,6 +185,10 @@ Removing the image at a later time:
 
 h2. Changelog
 
+h3. Version 1.4
+
+* Added getViewableImageArea() method.
+
 h3. Version 1.3
 
 * Reorganized CSS3 and ImageStretch subclasses to a more well-factored state.
