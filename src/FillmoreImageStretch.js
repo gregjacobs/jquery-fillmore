@@ -23,36 +23,20 @@
 		
 		/**
 		 * @private
-		 * @property {jQuery} $containerSizingEl
-		 * 
-		 * The element to use to size the fillmore'd element. This is in most cases the {@link #$containerEl} itself, but
-		 * in the case that the document body is being used, it becomes either the document object (for iOS), or the window
-		 * object for all other OS's.
-		 */
-		
-		/**
-		 * @private
 		 * @property {jQuery} $imgEl
 		 * 
 		 * Will store the current image that is displayed when {@link #showImage} is called.
 		 */
 		$imgEl : null,
-		
-		/**
-		 * @private
-		 * @property {Number} imgRatio
-		 * 
-		 * Stores the image ratio of the current image.
-		 */
-		imgRatio : null,
 	
 		/**
 		 * @private
-		 * @property {jQuery} $deletable
+		 * @property {jQuery} $oldImage
 		 * 
-		 * The old img element to be deleted once a new image has been inserted.
-		 * Used with multiple calls to fillmore on a given element.
+		 * The old img element to be deleted once a new image has been loaded, and just before 
+		 * the new image is inserted. Used with multiple calls to fillmore on a given element.
 		 */
+		$oldImage : null,
 		
 		
 		// ------------------------------------
@@ -67,12 +51,6 @@
 		 */
 		init : function( containerEl ) {
 			$.Fillmore.prototype.init.apply( this, arguments );
-
-			if( this.$containerEl.is( 'body' ) ) {
-				this.$containerSizingEl = ( 'onorientationchange' in window ) ? $( document ) : $( window ); // hack to acccount for iOS position:fixed shortcomings
-			} else {
-				this.$containerSizingEl = this.$containerEl;
-			}
 			
 			// Add a handler to adjust the background size when the window is resized or orientation has changed (iOS)
 			this.resizeProxy = $.proxy( this.resize, this );  // need to store a reference to this function, so we can remove the listener in destroy()
@@ -100,10 +78,10 @@
 		 */
 		loadImage : function( src ) {
 			// Mark any old image(s) for removal. They will be removed when the new image loads.
-			this.$deletable = this.$imgEl;
+			this.$oldImage = this.$imgEl;
 			
 			// Create a new image element
-			this.$imgEl = $( '<img style="position: absolute; display: none; margin: 0; padding: 0; border: none; z-index: -999999;" />' )
+			this.$imgEl = $( '<img style="position: absolute; margin: 0; padding: 0; border: none; z-index: -999999;" />' )
 				.bind( 'load error', $.proxy( this.onImageLoad, this ) )
 				.appendTo( this.$fillmoreEl );
 							
@@ -131,20 +109,14 @@
 			}
 
 			// Remove the old image (if it exists)
-			if( this.$deletable ) {
-				this.$deletable.remove();
-				this.$deletable = null;
+			if( this.$oldImage ) {
+				this.$oldImage.remove();
+				this.$oldImage = null;
 			}
-
+			
 			$.Fillmore.prototype.onImageLoad.apply( this, arguments );
 			
-			$imageEl.css( { width: "auto", height: "auto" } );
-			
-			var imgWidth = img.width || $imageEl.width(),
-				imgHeight = img.height || $imageEl.height();
-			
-			// Store the image ratio, and resize
-			this.imgRatio = imgWidth / imgHeight;
+			// Now, set the initial size
 			this.resize();
 		},
 		
@@ -157,32 +129,16 @@
 		resize : function() {
 			if( this.$imgEl && this.imageLoaded ) {  // make sure the image has been created and loaded, in case of a resize that happens too early
 				try {
-					var settings = this.settings,
-						$containerEl = this.$containerEl,
-						$containerSizingEl = this.$containerSizingEl,
-						containerHeight = $containerSizingEl.outerHeight() || $containerSizingEl.height(),  // outerHeight() for regular elements, and height() for window (which returns null for outerHeight())
-						containerWidth = $containerSizingEl.outerWidth() || $containerSizingEl.width(),	 // outerWidth() for regular elements, and width() for window (which returns null for outerWidth())
-						
-						bgCSS = { left: 0, top: 0 },
-						bgWidth = containerWidth,
-						bgHeight = bgWidth / this.imgRatio;
+					var sizeAndOffsets = this.calculateStretchedSizeAndOffsets();
 					
-					
-					// Make adjustments based on image ratio
-					// Note: Offset code inspired by Peter Baker (http://ptrbkr.com/). Thanks, Peter!
-					if( bgHeight >= containerHeight ) {
-						var topOffset = ( bgHeight - containerHeight ) * this.settings.focusY / 100;
-						$.extend( bgCSS, { top: "-" + topOffset + "px" } );
-					} else {
-						bgHeight = containerHeight;
-						bgWidth = bgHeight * this.imgRatio;
-						var leftOffset = ( bgWidth - containerWidth ) * this.settings.focusX / 100;
-						$.extend( bgCSS, { left: "-" + leftOffset + "px" } );
-					}
+					var bgCSS = { 
+						left: "-" + sizeAndOffsets.offsetLeft + "px",
+						top: "-" + sizeAndOffsets.offsetTop + "px"
+					};
 					
 					// Update the elements
-					this.$fillmoreEl.width( bgWidth ).height( bgHeight );
-					this.$imgEl.width( bgWidth ).height( bgHeight ).css( bgCSS );
+					this.$fillmoreEl.width( sizeAndOffsets.stretchedWidth ).height( sizeAndOffsets.stretchedHeight );
+					this.$imgEl.width( sizeAndOffsets.stretchedWidth ).height( sizeAndOffsets.stretchedHeight ).css( bgCSS );
 					
 				} catch( err ) {
 					// IE7 seems to trigger resize() before the image is loaded.
@@ -200,10 +156,10 @@
 		 * @method destroy
 		 */
 		destroy : function() {
-			$.Fillmore.prototype.destroy.apply( this, arguments );
-			
 			// Remove the window resize handler
 			$( window ).unbind( 'resize', this.resizeProxy );
+			
+			$.Fillmore.prototype.destroy.apply( this, arguments );
 		}
 		
 	} );

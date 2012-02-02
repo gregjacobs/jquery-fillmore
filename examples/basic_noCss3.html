@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<style>
+		body { font-family: Helvetica, Arial, sans-serif; }
+		.container {
+			width: 90%;
+			margin: 20px auto;
+			background-color: #FFF;
+			padding: 20px;
+		}
+		pre { border: 1px solid #CCC; background-color: #EEE; color: #333; padding: 10px; }
+	</style>
+</head>
+<body>
+	<div class="container">
+		<h1>Basic Demo</h1>
+		<p>This is a basic demo of jQuery Fillmore. It is a simple example of loading one image onto the page. 
+			This example disables the CSS3 implementation, which is normally used if your browser supports it.</p>
+		<pre><code>
+&lt;script src=&quot;../lib/jquery-1.7.1.min.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;../jquery.fillmore.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+	$.fillmore( { src: &quot;pot-holder.jpg&quot;, noCss3: true } );
+&lt;/script&gt;
+		</code></pre>
+	</div>
+	<script src="../lib/jquery-1.7.1.min.js"></script>
+	<script src="../jquery.fillmore.js"></script>
+	<script>
+		$.fillmore( { src: "pot-holder.jpg", noCss3: true } );
+	</script>
+</body>
+</html>

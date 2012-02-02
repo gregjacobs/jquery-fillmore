@@ -27,7 +27,34 @@
 			return this;
 		},
 		
-		// deprecated
+		getSrc : function() {
+			var el = this[ 0 ], fillmore;
+			if( el && ( fillmore = $( el ).data( 'fillmore' ) ) ) {
+				return fillmore.getSrc();
+			} else {
+				return undefined;
+			}
+		},
+		
+		getImageSize : function() {
+			var el = this[ 0 ], fillmore;
+			if( el && ( fillmore = $( el ).data( 'fillmore' ) ) ) {
+				return fillmore.getImageSize();
+			} else {
+				return undefined;
+			}
+		},
+		
+		getViewableImageArea : function() {
+			var el = this[ 0 ], fillmore;
+			if( el && ( fillmore = $( el ).data( 'fillmore' ) ) ) {
+				return fillmore.getViewableImageArea();
+			} else {
+				return undefined;
+			}
+		},
+		
+		// deprecated - isLoaded
 		isLoaded : function() {
 			var el = this[ 0 ], fillmore;
 			if( el && ( fillmore = $( el ).data( 'fillmore' ) ) ) {
@@ -52,24 +79,6 @@
 				return fillmore.imageIsVisible();
 			} else {
 				return false;  // element isn't fillmore'd, return false
-			}
-		},
-		
-		getSrc : function() {
-			var el = this[ 0 ], fillmore;
-			if( el && ( fillmore = $( el ).data( 'fillmore' ) ) ) {
-				return fillmore.getSrc();
-			} else {
-				return undefined;
-			}
-		},
-		
-		getImageSize : function() {
-			var el = this[ 0 ], fillmore;
-			if( el && ( fillmore = $( el ).data( 'fillmore' ) ) ) {
-				return fillmore.getImageSize();
-			} else {
-				return undefined;
 			}
 		},
 		

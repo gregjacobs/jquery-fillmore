@@ -86,6 +86,15 @@
 		 * 
 		 * The container element that is having a fillmore'd image applied to it.
 		 */
+		
+		/**
+		 * @private
+		 * @property {jQuery} $containerSizingEl
+		 * 
+		 * The element to use to size the fillmore'd element. This is in most cases the {@link #$containerEl} itself, but
+		 * in the case that the document body is being used, it becomes either the document object (for iOS), or the window
+		 * object for all other OS's.
+		 */
 	
 		/**
 		 * @protected
@@ -117,6 +126,9 @@
 		 * Flag to determine if the image is fully loaded, **and** has been faded in.
 		 */
 		imageVisible : false,
+		
+		
+		// -----------------------------
 		
 		
 		/**
@@ -168,6 +180,13 @@
 				}
 			}
 			
+			// Find the element that we should size off of. This is different than the actual $containerEl only if the
+			// $containerEl is the document body
+			if( this.$containerEl.is( 'body' ) ) {
+				this.$containerSizingEl = ( 'onorientationchange' in window ) ? $( document ) : $( window ); // hack to acccount for iOS position:fixed shortcomings
+			} else {
+				this.$containerSizingEl = this.$containerEl;
+			}
 			
 			this.createFillmoreEl();
 		},
@@ -196,7 +215,19 @@
 		updateSettings : function( settings ) {
 			this.settings = $.extend( this.settings, settings );
 		},
-	
+		
+		
+		
+		/**
+		 * Retrieves the src of the image that is currently being shown (or is loading).
+		 * 
+		 * @method getSrc
+		 * @return {String} The src of the image currently being shown (or is loading), or null if there is none.
+		 */
+		getSrc : function() {
+			return this.settings.src;
+		},
+		
 	
 		/**
 		 * Abstract method to retrieve the element that has the image attached.
@@ -220,15 +251,113 @@
 		 *   image is not yet loaded.
 		 */
 		getImageSize : function() {
-			if( this.imageLoaded ) {
+			if( !this.imageLoaded ) {
+				return null;
+				
+			} else {
 				var imageEl = this.getImageEl()[ 0 ];
 				return {
 					width: imageEl.width,
 					height: imageEl.height
-				};
+				};	
+			}
+		},
+		
+		
+		/**
+		 * Calculates the stretched size and offset of where the top/left of the image should be in relation to the top/left of the viewable 
+		 * area. Because the image is "stretched" behind the viewable area, its top/left position usually exists above and to the left
+		 * of the viewable area itself. Offsets are returned as positive numbers (even though they will most likely be used to apply
+		 * negative offsets to the image).
+		 * 
+		 * This method returns the stretched size and offsets based on the image's original size, the viewable area size 
+		 * (i.e. the {@link #$containerEl containerEl's} size), and the focusX and focusY points (settings).
+		 * 
+		 * @protected
+		 * @method calculateStretchedSizeAndOffsets
+		 * @return {Object} Unless the image is not loaded (in which case, this method returns null), returns an object with the 
+		 *   following properties:
+		 * @return {Number} return.offsetLeft The number of pixels from the left side of the image to the left side of the viewable area.
+		 *   Will be 0 if the left side of the stretched image is to be flush with the left side of the container, or a positive number
+		 *   for how far away it should be.
+		 * @return {Number} return.offsetTop The number of pixels from the top of the image to the top of the viewable area.
+		 *   Will be 0 if the top of the stretched image is to be flush with the top of the container, or a positive number
+		 *   for how far away it should be.
+		 * @return {Number} return.stretchedWidth The width that the background image should be, to stretch over the container.
+		 * @return {Number} return.stretchedHeight The height that the background image should be, to stretch over the container.
+		 */
+		calculateStretchedSizeAndOffsets : function() {
+			var $imageEl = this.getImageEl(),
+			    imgEl = $imageEl[ 0 ];
+			
+			// Store the ratio of the image's width to height. This is for the offsets calculation.
+			$imageEl.css( { width: "auto", height: "auto" } );  // make sure the image element doesn't have any explicit width/height for the measurement (which may be added if it has been resized before)
+			
+			var imgWidth = imgEl.width || $imageEl.width(),
+				imgHeight = imgEl.height || $imageEl.height(),
+				imgRatio = imgWidth / imgHeight,
+				
+				settings = this.settings,
+			    $containerEl = this.$containerEl,
+			    $containerSizingEl = this.$containerSizingEl,
+			    containerHeight = $containerSizingEl.outerHeight() || $containerSizingEl.height(),  // outerHeight() for regular elements, and height() for window (which returns null for outerHeight())
+			    containerWidth = $containerSizingEl.outerWidth() || $containerSizingEl.width(),	    // outerWidth() for regular elements, and width() for window (which returns null for outerWidth())
+				
+				offsetLeft = 0,
+				offsetTop = 0,
+				stretchedWidth = containerWidth,
+				stretchedHeight = stretchedWidth / imgRatio;
+			
+			// Make adjustments based on image ratio
+			// Note: Offset code inspired by Peter Baker (http://ptrbkr.com/). Thanks, Peter!
+			if( stretchedHeight >= containerHeight ) {
+				offsetTop = ( stretchedHeight - containerHeight ) * this.settings.focusY / 100;
+			} else {
+				stretchedHeight = containerHeight;
+				stretchedWidth = stretchedHeight * imgRatio;
+				offsetLeft = ( stretchedWidth - containerWidth ) * this.settings.focusX / 100;
+			}
+			
+			return {
+				offsetLeft      : offsetLeft,
+				offsetTop       : offsetTop,
+				stretchedWidth  : stretchedWidth,
+				stretchedHeight : stretchedHeight
+			};
+		},
+		
+		
+		/**
+		 * Retrives the area of the image that is currently "viewable". Returns the top/left
+		 * offset from the image to the top/left of the viewable area, and returns the height/width
+		 * of the viewable area as well.
+		 * 
+		 * @method getViewableImageArea
+		 * @return {Object} An object (hashmap) with the following properties (unless the image is not currently loaded, in 
+		 * 	  which case this method returns null):
+		 * @return {Number} return.width The number of pixels that represent the width of the viewable area.
+		 * @return {Number} return.height The number of pixels that represent the height of the viewable area.
+		 * @return {Number} return.offsetLeft The number of pixels from the left side of the image to the left side of the viewable area.
+		 * @return {Number} return.offsetTop The number of pixels from the top of the image to the top of the viewable area.
+		 * @return {Number} return.stretchedWidth The width that the background image has been stretched to be, to stretch over the container.
+		 * @return {Number} return.stretchedHeight The height that the background image has been stretched to be, to stretch over the container.
+		 */
+		getViewableImageArea : function() {
+			if( !this.imageLoaded ) {
+				return null;
 				
 			} else {
-				return null;
+				var $containerEl = this.$containerEl,
+				    imageSizeAndOffsets = this.calculateStretchedSizeAndOffsets();
+				
+				return {
+					width           : $containerEl.innerWidth(),
+					height          : $containerEl.innerHeight(),
+					offsetLeft      : imageSizeAndOffsets.offsetLeft,
+					offsetTop       : imageSizeAndOffsets.offsetTop,
+					stretchedWidth  : imageSizeAndOffsets.stretchedWidth,
+					stretchedHeight : imageSizeAndOffsets.stretchedHeight
+				};
 			}
 		},
 	
@@ -261,59 +390,6 @@
 			throw new Error( "loadImage() must be implemented in subclass" );
 		},
 		
-		
-		/**
-		 * Method that is called when the image is loaded.
-		 *
-		 * @protected
-		 * @method onImageLoad
-		 * @param {jQuery.Event} evt
-		 */
-		onImageLoad : function( evt ) {
-			this.imageLoaded = true;
-			
-			// Call the onImageLoad callback, if there is one
-			var onImageLoad = this.settings.onImageLoad;
-			if( typeof onImageLoad === 'function' ) {
-				onImageLoad();
-			}
-			
-			this.$fillmoreEl
-				.hide()
-				.fadeIn( this.settings.speed, $.proxy( this.onImageVisible, this ) );
-		},
-		
-		
-		/**
-		 * Method that is called when the image becomes fully visible.
-		 *
-		 * @private
-		 * @method onImageVisible
-		 * @param {Function} callback (optional) A callback to call when the image has loaded and faded in.
-		 *   This is called before the {@link #settings} `onImageVisible` callback is called.
-		 */
-		onImageVisible : function( callback ) {
-			this.imageVisible = true;
-			
-			var settings = this.settings,
-			    onImageVisible = settings.onImageVisible || settings.callback;  // 'callback' is legacy
-			    
-			if( typeof onImageVisible === "function" ) {
-				onImageVisible();
-			}
-		},
-	
-	
-		/**
-		 * Resizes the background image to the proper size, and fixes its position based on the container size.
-		 * 
-		 * @abstract
-		 * @method resize
-		 */
-		resize : function() {
-			throw new Error( "resize() must be implemented in subclass" );
-		},
-	
 	
 		/**
 		 * Deprecated, use {@link #imageIsVisible} instead. This method is simply an alias to {@link #imageIsVisible}
@@ -351,19 +427,67 @@
 		imageIsVisible : function() {
 			return this.imageVisible;
 		},
+	
+	
+		/**
+		 * Resizes the background image to the proper size, and fixes its position based on the container size.
+		 * 
+		 * @abstract
+		 * @method resize
+		 */
+		resize : function() {
+			throw new Error( "resize() must be implemented in subclass" );
+		},
+		
+		
+		// ---------------------------
 		
 		
 		/**
-		 * Retrieves the src of the image that is currently being shown (or is loading).
-		 * 
-		 * @method getSrc
-		 * @return {String} The src of the image currently being shown (or is loading), or null if there is none.
+		 * Method that is called when the image is loaded.
+		 *
+		 * @protected
+		 * @method onImageLoad
+		 * @param {jQuery.Event} evt
 		 */
-		getSrc : function() {
-			return this.settings.src;
+		onImageLoad : function( evt ) {			
+			this.imageLoaded = true;
+			
+			// Call the onImageLoad callback, if there is one
+			var onImageLoad = this.settings.onImageLoad;
+			if( typeof onImageLoad === 'function' ) {
+				onImageLoad();
+			}
+			
+			this.$fillmoreEl
+				.hide()
+				.fadeIn( this.settings.speed, $.proxy( this.onImageVisible, this ) );
 		},
-	
-	
+		
+		
+		/**
+		 * Method that is called when the image becomes fully visible.
+		 *
+		 * @private
+		 * @method onImageVisible
+		 * @param {Function} callback (optional) A callback to call when the image has loaded and faded in.
+		 *   This is called before the {@link #settings} `onImageVisible` callback is called.
+		 */
+		onImageVisible : function( callback ) {
+			this.imageVisible = true;
+			
+			var settings = this.settings,
+			    onImageVisible = settings.onImageVisible || settings.callback;  // 'callback' is legacy
+			    
+			if( typeof onImageVisible === "function" ) {
+				onImageVisible();
+			}
+		},
+		
+		
+		// ------------------------------
+		
+		
 		/**
 		 * Remove Fillmore from the target element.
 		 *
@@ -535,36 +659,20 @@
 		
 		/**
 		 * @private
-		 * @property {jQuery} $containerSizingEl
-		 * 
-		 * The element to use to size the fillmore'd element. This is in most cases the {@link #$containerEl} itself, but
-		 * in the case that the document body is being used, it becomes either the document object (for iOS), or the window
-		 * object for all other OS's.
-		 */
-		
-		/**
-		 * @private
 		 * @property {jQuery} $imgEl
 		 * 
 		 * Will store the current image that is displayed when {@link #showImage} is called.
 		 */
 		$imgEl : null,
-		
-		/**
-		 * @private
-		 * @property {Number} imgRatio
-		 * 
-		 * Stores the image ratio of the current image.
-		 */
-		imgRatio : null,
 	
 		/**
 		 * @private
-		 * @property {jQuery} $deletable
+		 * @property {jQuery} $oldImage
 		 * 
-		 * The old img element to be deleted once a new image has been inserted.
-		 * Used with multiple calls to fillmore on a given element.
+		 * The old img element to be deleted once a new image has been loaded, and just before 
+		 * the new image is inserted. Used with multiple calls to fillmore on a given element.
 		 */
+		$oldImage : null,
 		
 		
 		// ------------------------------------
@@ -579,12 +687,6 @@
 		 */
 		init : function( containerEl ) {
 			$.Fillmore.prototype.init.apply( this, arguments );
-
-			if( this.$containerEl.is( 'body' ) ) {
-				this.$containerSizingEl = ( 'onorientationchange' in window ) ? $( document ) : $( window ); // hack to acccount for iOS position:fixed shortcomings
-			} else {
-				this.$containerSizingEl = this.$containerEl;
-			}
 			
 			// Add a handler to adjust the background size when the window is resized or orientation has changed (iOS)
 			this.resizeProxy = $.proxy( this.resize, this );  // need to store a reference to this function, so we can remove the listener in destroy()
@@ -612,10 +714,10 @@
 		 */
 		loadImage : function( src ) {
 			// Mark any old image(s) for removal. They will be removed when the new image loads.
-			this.$deletable = this.$imgEl;
+			this.$oldImage = this.$imgEl;
 			
 			// Create a new image element
-			this.$imgEl = $( '<img style="position: absolute; display: none; margin: 0; padding: 0; border: none; z-index: -999999;" />' )
+			this.$imgEl = $( '<img style="position: absolute; margin: 0; padding: 0; border: none; z-index: -999999;" />' )
 				.bind( 'load error', $.proxy( this.onImageLoad, this ) )
 				.appendTo( this.$fillmoreEl );
 							
@@ -643,20 +745,14 @@
 			}
 
 			// Remove the old image (if it exists)
-			if( this.$deletable ) {
-				this.$deletable.remove();
-				this.$deletable = null;
+			if( this.$oldImage ) {
+				this.$oldImage.remove();
+				this.$oldImage = null;
 			}
-
+			
 			$.Fillmore.prototype.onImageLoad.apply( this, arguments );
 			
-			$imageEl.css( { width: "auto", height: "auto" } );
-			
-			var imgWidth = img.width || $imageEl.width(),
-				imgHeight = img.height || $imageEl.height();
-			
-			// Store the image ratio, and resize
-			this.imgRatio = imgWidth / imgHeight;
+			// Now, set the initial size
 			this.resize();
 		},
 		
@@ -669,32 +765,16 @@
 		resize : function() {
 			if( this.$imgEl && this.imageLoaded ) {  // make sure the image has been created and loaded, in case of a resize that happens too early
 				try {
-					var settings = this.settings,
-						$containerEl = this.$containerEl,
-						$containerSizingEl = this.$containerSizingEl,
-						containerHeight = $containerSizingEl.outerHeight() || $containerSizingEl.height(),  // outerHeight() for regular elements, and height() for window (which returns null for outerHeight())
-						containerWidth = $containerSizingEl.outerWidth() || $containerSizingEl.width(),	 // outerWidth() for regular elements, and width() for window (which returns null for outerWidth())
-						
-						bgCSS = { left: 0, top: 0 },
-						bgWidth = containerWidth,
-						bgHeight = bgWidth / this.imgRatio;
+					var sizeAndOffsets = this.calculateStretchedSizeAndOffsets();
 					
-					
-					// Make adjustments based on image ratio
-					// Note: Offset code inspired by Peter Baker (http://ptrbkr.com/). Thanks, Peter!
-					if( bgHeight >= containerHeight ) {
-						var topOffset = ( bgHeight - containerHeight ) * this.settings.focusY / 100;
-						$.extend( bgCSS, { top: "-" + topOffset + "px" } );
-					} else {
-						bgHeight = containerHeight;
-						bgWidth = bgHeight * this.imgRatio;
-						var leftOffset = ( bgWidth - containerWidth ) * this.settings.focusX / 100;
-						$.extend( bgCSS, { left: "-" + leftOffset + "px" } );
-					}
+					var bgCSS = { 
+						left: "-" + sizeAndOffsets.offsetLeft + "px",
+						top: "-" + sizeAndOffsets.offsetTop + "px"
+					};
 					
 					// Update the elements
-					this.$fillmoreEl.width( bgWidth ).height( bgHeight );
-					this.$imgEl.width( bgWidth ).height( bgHeight ).css( bgCSS );
+					this.$fillmoreEl.width( sizeAndOffsets.stretchedWidth ).height( sizeAndOffsets.stretchedHeight );
+					this.$imgEl.width( sizeAndOffsets.stretchedWidth ).height( sizeAndOffsets.stretchedHeight ).css( bgCSS );
 					
 				} catch( err ) {
 					// IE7 seems to trigger resize() before the image is loaded.
@@ -712,10 +792,10 @@
 		 * @method destroy
 		 */
 		destroy : function() {
-			$.Fillmore.prototype.destroy.apply( this, arguments );
-			
 			// Remove the window resize handler
 			$( window ).unbind( 'resize', this.resizeProxy );
+			
+			$.Fillmore.prototype.destroy.apply( this, arguments );
 		}
 		
 	} );
@@ -749,7 +829,34 @@
 			return this;
 		},
 		
-		// deprecated
+		getSrc : function() {
+			var el = this[ 0 ], fillmore;
+			if( el && ( fillmore = $( el ).data( 'fillmore' ) ) ) {
+				return fillmore.getSrc();
+			} else {
+				return undefined;
+			}
+		},
+		
+		getImageSize : function() {
+			var el = this[ 0 ], fillmore;
+			if( el && ( fillmore = $( el ).data( 'fillmore' ) ) ) {
+				return fillmore.getImageSize();
+			} else {
+				return undefined;
+			}
+		},
+		
+		getViewableImageArea : function() {
+			var el = this[ 0 ], fillmore;
+			if( el && ( fillmore = $( el ).data( 'fillmore' ) ) ) {
+				return fillmore.getViewableImageArea();
+			} else {
+				return undefined;
+			}
+		},
+		
+		// deprecated - isLoaded
 		isLoaded : function() {
 			var el = this[ 0 ], fillmore;
 			if( el && ( fillmore = $( el ).data( 'fillmore' ) ) ) {
@@ -774,24 +881,6 @@
 				return fillmore.imageIsVisible();
 			} else {
 				return false;  // element isn't fillmore'd, return false
-			}
-		},
-		
-		getSrc : function() {
-			var el = this[ 0 ], fillmore;
-			if( el && ( fillmore = $( el ).data( 'fillmore' ) ) ) {
-				return fillmore.getSrc();
-			} else {
-				return undefined;
-			}
-		},
-		
-		getImageSize : function() {
-			var el = this[ 0 ], fillmore;
-			if( el && ( fillmore = $( el ).data( 'fillmore' ) ) ) {
-				return fillmore.getImageSize();
-			} else {
-				return undefined;
 			}
 		},
 		
