@@ -107,6 +107,17 @@ h3. getImageSize
 
 Retrieves the size of the original image used. Returns an object with properties `width` and `height`, or returns null if the image is not yet loaded.
 
+h3. getViewableImageArea
+
+Returns an object (hashmap) of properties defining the viewable area of the stretched image. Returns the following properties:
+
+* {Number} width: The number of pixels that represent the width of the viewable area.
+* {Number} height: The number of pixels that represent the height of the viewable area.
+* {Number} offsetLeft: The number of pixels from the left side of the image to the left side of the viewable area.
+* {Number} offsetTop: The number of pixels from the top of the image to the top of the viewable area.
+* {Number} stretchedWidth: The width that the background image has been stretched to be, to stretch over the container.
+* {Number} stretchedHeight: The height that the background image has been stretched to be, to stretch over the container.
+
 h3. imageIsLoaded
 
 Returns true if the latest image requested has been loaded. This will return true as soon as the image has loaded, before the image is visible (i.e. has been faded in).
