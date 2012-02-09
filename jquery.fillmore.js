@@ -459,9 +459,18 @@
 				onImageLoad();
 			}
 			
-			this.$fillmoreEl
-				.hide()
-				.fadeIn( this.settings.speed, $.proxy( this.onImageVisible, this ) );
+			if( this.settings.speed ) {
+				this.$fillmoreEl
+					.hide()
+					.fadeIn( this.settings.speed, $.proxy( this.onImageVisible, this ) );
+					
+				// Reset the 'speed' now, so it only affects the initial load, and not changes to other settings (ex: the focus settings)
+				this.settings.speed = 0;
+				
+			} else {
+				// No fade in "speed", the image is visible
+				this.onImageVisible();
+			}
 		},
 		
 		

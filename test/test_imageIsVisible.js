@@ -52,4 +52,21 @@
 		} );
 	} );
 	
+	
+	asyncTest( "should return true immediately after the image has loaded, if there is no 'fade in' speed", 2, function() {
+		var $fixture = $( '#qunit-fixture' );
+		
+		$fixture.fillmore( {
+			src : '../examples/coffee.jpg',
+			speed : 0,
+			
+			onImageVisible : function() {
+				start();
+				
+				strictEqual( $fixture.fillmore( 'imageIsLoaded' ), true );
+				strictEqual( $fixture.fillmore( 'imageIsVisible' ), true );
+			}
+		} );
+	} );
+	
 })();
