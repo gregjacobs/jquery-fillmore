@@ -189,6 +189,7 @@ h3. Version 1.4.1
 
 * The 'speed' setting only affects the call to fillmore() that it is provided with, not subsequent calls which may just change
   other settings such as 'focusX' and 'focusY'.
+* Upgrade Modernizr to 2.6.2.
 
 h3. Version 1.4
 
