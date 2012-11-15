@@ -200,7 +200,7 @@
 		 */
 		createFillmoreEl : function() {
 			// The div element that will be placed inside the container, with the image placed inside of it
-			this.$fillmoreEl = $( '<div style="left: 0; top: 0; position: ' + this.fillmoreElPosition + '; overflow: hidden; z-index: -999999; margin: 0; padding: 0; height: 100%; width: 100%;" />' )
+			this.$fillmoreEl = $( '<div class="fillmoreInner" style="left: 0; top: 0; position: ' + this.fillmoreElPosition + '; overflow: hidden; z-index: -999999; margin: 0; padding: 0; height: 100%; width: 100%;" />' )
 				.appendTo( this.$containerEl );
 		},
 		
